@@ -1,6 +1,9 @@
 #include <iostream>
 #include <fstream>
 
+#include "vec3.h"
+#include "color.h"
+
 using namespace std;
 
 int main(int argc, char const *argv[])
@@ -25,15 +28,8 @@ int main(int argc, char const *argv[])
             for (int i = 0; i < img_width; ++i)
             {
                 clog << "\rProgress:" << j * img_width + i << "(Pixels Rendered) / " << total_pixel << flush;
-                auto r = double(i) / (img_width - 1);
-                auto g = double(j) / (img_height - 1);
-                auto b = 0;
-
-                int ir = static_cast<int>(255.99 * r);
-                int ig = static_cast<int>(255.99 * g);
-                int ib = static_cast<int>(255.99 * b);
-
-                o << ir << ' ' << ig << ' ' << ib << endl;
+                color pixel_col = color(double(i) / (img_width - 1), double(j) / (img_height - 1), 0);
+                write_color(o, pixel_col);
             }
         }
     }
