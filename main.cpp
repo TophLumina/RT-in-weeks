@@ -4,7 +4,7 @@
 #include "vec3.h"
 #include "color.h"
 #include "ray.h"
-#include "thraeding.h"
+#include "threading.h"
 
 using namespace std;
 
@@ -12,7 +12,7 @@ int main(int argc, char const *argv[])
 {
 
     // Image
-    ofstream o("./image.ppm", ios::out);
+    ofstream out("./image.ppm", ios::out);
     auto aspect_ratio = 16.0 / 9.0;
     int img_width = 1600;
 
@@ -49,9 +49,9 @@ int main(int argc, char const *argv[])
     auto start = chrono::steady_clock::now();
 
     // Render
-    if (o.is_open())
+    if (out.is_open())
     {
-        o << "P3\n"
+        out << "P3\n"
           // P3 means color in ASCII
           << img_width << ' ' << img_height << "\n255" << endl;
 
@@ -66,7 +66,7 @@ int main(int argc, char const *argv[])
             //     ray primary_ray(camera_center, normalize(ray_direction));
 
             //     color pixel_color = ray_color(primary_ray);
-            //     write_color(o, pixel_color);
+            //     write_color(out, pixel_color);
             // }
 
             // Multi Threading
@@ -86,7 +86,7 @@ int main(int argc, char const *argv[])
         {
             for (int i = 0; i < img_width; ++i)
             {
-                write_color(o, buffer[j][i]);
+                write_color(out, buffer[j][i]);
             }
         }
     }
@@ -106,6 +106,6 @@ int main(int argc, char const *argv[])
     delete[] buffer;
     threads.clear();
 
-    o.close();
-    std::clog << "\nDone. Rendering Time: " << rendering_time.count() << 's' << endl;
+    out.close();
+    std::clog << "\nDone. Total Rendering Time: " << rendering_time.count() << 's' << endl;
 }
