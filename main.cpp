@@ -1,10 +1,13 @@
 #include <iostream>
 #include <fstream>
 
-#include "vec3.h"
+#include "rtweekend.h"
+
 #include "color.h"
-#include "ray.h"
 #include "threading.h"
+#include "hittable.h"
+#include "hittable_list.h"
+#include "sphere.h"
 
 using namespace std;
 
@@ -14,15 +17,22 @@ int main(int argc, char const *argv[])
     // Image
     ofstream out("./image.ppm", ios::out);
     auto aspect_ratio = 16.0 / 9.0;
-    int img_width = 1600;
+    int img_width = 800;
 
     int img_height = static_cast<int>(img_width / aspect_ratio);
     img_height = (img_height < 1) ? 1 : img_height; // img_height must > 1
 
+    // World
+
+    hittable_list world;
+
+    world.add(make_shared<sphere>(point3(0, 0, -1), 0.5));
+    world.add(make_shared<sphere>(point3(0, -100.5, -1), 100));
+
     // Camera
     auto focal_length = 1.0;
     auto viewport_height = 2.0;
-    auto viewport_width = viewport_height * static_cast<double>(img_width / img_height);
+    auto viewport_width = viewport_height * static_cast<double>(img_width) / img_height;
     auto camera_center = point3(0, 0, 0);
 
     // Vectors of viewport delta_pixel offsets
@@ -35,7 +45,7 @@ int main(int argc, char const *argv[])
     auto viewport_upper_left = camera_center - vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
     auto pixel00_position = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
-    // Try MultiThreading
+    // Buffer for MultiThreading
     color **buffer = new color *[img_height];
     for (int i = 0; i < img_height; ++i)
     {
@@ -52,32 +62,20 @@ int main(int argc, char const *argv[])
     if (out.is_open())
     {
         out << "P3\n"
-          // P3 means color in ASCII
-          << img_width << ' ' << img_height << "\n255" << endl;
+            // P3 means color in ASCII
+            << img_width << ' ' << img_height << "\n255" << endl;
 
         for (int j = 0; j < img_height; ++j)
         {
-            // clog << "\rRendered Lines: " << j << " / " << img_height << flush;
-            // for (int i = 0; i < img_width; ++i)
-            // {
-            //     auto pixel_center = pixel00_position + i * pixel_delta_u + j * pixel_delta_v;
-            //     auto ray_direction = pixel_center - camera_center;
-
-            //     ray primary_ray(camera_center, normalize(ray_direction));
-
-            //     color pixel_color = ray_color(primary_ray);
-            //     write_color(out, pixel_color);
-            // }
-
-            // Multi Threading
-            threads.emplace_back(threading_func, camera_center, pixel00_position, pixel_delta_u, pixel_delta_v, j, img_width, buffer);
+            // Load Threads
+            threads.emplace_back(threading_func, world, camera_center, pixel00_position, pixel_delta_u, pixel_delta_v, j, img_width, buffer);
         }
 
         for (int j = 0; j < img_height; ++j)
             threads[j].join();
 
         thread thread_indicator(threading_indicator_func, img_height);
-        thread_indicator.join();
+        thread_indicator.detach();
 
         clog << "Calculation Done. Now Transferring Data to target.ppm" << endl;
 
@@ -99,6 +97,7 @@ int main(int argc, char const *argv[])
     auto transfer_end = chrono::steady_clock::now();
     auto rendering_time = chrono::duration_cast<chrono::seconds>(transfer_end - start);
 
+    world.clear();
     for (int i = 0; i < img_height; ++i)
     {
         delete[] buffer[i];
@@ -107,5 +106,5 @@ int main(int argc, char const *argv[])
     threads.clear();
 
     out.close();
-    std::clog << "\nDone. Total Rendering Time: " << rendering_time.count() << 's' << endl;
+    std::clog << "\nTransfer Done. Total Rendering Time: " << rendering_time.count() << 's' << endl;
 }
