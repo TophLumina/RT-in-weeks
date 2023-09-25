@@ -1,5 +1,4 @@
 #include <iostream>
-#include <fstream>
 
 #include "rtweekend.h"
 
@@ -15,7 +14,6 @@ int main(int argc, char const *argv[])
 {
 
     // Image
-    ofstream out("./image.ppm", ios::out);
     auto aspect_ratio = 16.0 / 9.0;
     int img_width = 1600;
 
@@ -59,39 +57,31 @@ int main(int argc, char const *argv[])
     auto start = chrono::steady_clock::now();
 
     // Render
-    if (out.is_open())
+    cout << "P3\n"
+        // P3 means color in ASCII
+        << img_width << ' ' << img_height << "\n255" << endl;
+
+    for (int j = 0; j < img_height; ++j)
     {
-        out << "P3\n"
-            // P3 means color in ASCII
-            << img_width << ' ' << img_height << "\n255" << endl;
-
-        for (int j = 0; j < img_height; ++j)
-        {
-            // Load Threads
-            threads.emplace_back(threading_func, world, camera_center, pixel00_position, pixel_delta_u, pixel_delta_v, j, img_width, buffer);
-        }
-
-        for (int j = 0; j < img_height; ++j)
-            threads[j].join();
-
-        thread thread_indicator(threading_indicator_func, img_height);
-        thread_indicator.detach();
-
-        clog << "Calculation Done. Now Transferring Data to target.ppm" << endl;
-
-        // Transfer color from buffer to img
-        for (int j = 0; j < img_height; ++j)
-        {
-            for (int i = 0; i < img_width; ++i)
-            {
-                write_color(out, buffer[j][i]);
-            }
-        }
+        // Load Threads
+        threads.emplace_back(threading_func, world, camera_center, pixel00_position, pixel_delta_u, pixel_delta_v, j, img_width, buffer);
     }
-    else
+
+    for (int j = 0; j < img_height; ++j)
+        threads[j].join();
+
+    thread thread_indicator(threading_indicator_func, img_height);
+    thread_indicator.detach();
+
+    clog << "Calculation Done. Now Transferring Data to target.ppm" << endl;
+
+    // Transfer color from buffer to img
+    for (int j = 0; j < img_height; ++j)
     {
-        std::clog << "File dead." << endl;
-        return 1;
+        for (int i = 0; i < img_width; ++i)
+        {
+            write_color(cout, buffer[j][i]);
+        }
     }
 
     auto transfer_end = chrono::steady_clock::now();
@@ -105,6 +95,5 @@ int main(int argc, char const *argv[])
     delete[] buffer;
     threads.clear();
 
-    out.close();
     std::clog << "\nDone. Total Rendering Time: " << rendering_time.count() << 's' << endl;
 }
