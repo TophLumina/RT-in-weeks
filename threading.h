@@ -15,6 +15,26 @@
 
 using namespace std;
 
+// Return a random offset in the square around pixel
+vec3 pixel_sample_square(vec3 pixel_delta_u, vec3 pixel_delta_v)
+{
+    auto px = -0.5 + random_double();
+    auto py = -0.5 + random_double();
+
+    return (px * pixel_delta_u) + (py * pixel_delta_v);
+}
+
+// Return a randomly sampled ray for pixel i, j
+ray get_ray(point3 origin, point3 pixel00_pos, vec3 pixel_delta_u, vec3 pixel_delta_v, int i, int j)
+{
+    auto pixel_center = pixel00_pos + (j * pixel_delta_u) + (i * pixel_delta_v);
+    auto pixel_sample = pixel_center + pixel_sample_square(pixel_delta_u, pixel_delta_v);
+
+    auto ray_direction = pixel_sample - origin;
+
+    return ray(origin, ray_direction);
+}
+
 color ray_color(const ray &r, const hittable &world)
 {
     hit_info info;
@@ -30,17 +50,17 @@ color ray_color(const ray &r, const hittable &world)
 // Line Counter for MultiThreading
 atomic<int> line_rendered(0);
 // Funcs for supporting MultiThreading (One thread handle a line)
-void threading_func(const hittable &world, point3 camera_pos, point3 pixel00_pos, vec3 delta_u, vec3 delta_v, int index_row, int length_row, color **buffer)
+void threading_func(const hittable &world, point3 camera_pos, point3 pixel00_pos, vec3 pixel_delta_u, vec3 pixel_delta_v, int index_row, int length_row, int samplers_per_pixel, color **buffer)
 {
     for (int i = 0; i < length_row; ++i)
     {
-        auto pixel_center = pixel00_pos + i * delta_u + index_row * delta_v;
-        auto ray_direction = pixel_center - camera_pos;
-
-        ray primary_ray(camera_pos, ray_direction);
-
-        color pixel_color = ray_color(primary_ray, world);
-
+        color pixel_color(0, 0, 0);
+        for (int sample = 0; sample < samplers_per_pixel; ++sample)
+        {
+            ray r = get_ray(camera_pos, pixel00_pos, pixel_delta_u, pixel_delta_v, index_row, i);
+            pixel_color += ray_color(r, world);
+        }
+        
         // Write all color into buffer
         buffer[index_row][i] = pixel_color;
     }

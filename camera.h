@@ -7,8 +7,9 @@
 class camera
 {
 public:
-    double aspect_ratio = 1.0; // Ratio of image width over height
-    int image_width = 1;       // Rendered image width in pixel count
+    double aspect_ratio = 1.0;   // Ratio of image width over height
+    int image_width = 1;         // Rendered image width in pixel count
+    int samplers_per_pixel = 100;// Amount of samplers for each pixel
 
     void render(const hittable_list/* don't get it, but it works, and it won't work when get const hittable here*/ &world)
     {
@@ -34,8 +35,7 @@ public:
         for (int j = 0; j < image_height; ++j)
         {
             // Load Threads
-            // Bug here: C2259
-            threads.emplace_back(threading_func, world, center, pixel00_pos, pixel_delta_u, pixel_delta_v, j, image_width, buffer);
+            threads.emplace_back(threading_func, world, center, pixel00_pos, pixel_delta_u, pixel_delta_v, j, image_width, samplers_per_pixel, buffer);
         }
 
         thread thread_indicator(threading_indicator_func, image_height);
@@ -52,7 +52,7 @@ public:
         {
             for (int i = 0; i < image_width; ++i)
             {
-                write_color(cout, buffer[j][i]);
+                write_color(cout, buffer[j][i], samplers_per_pixel);
             }
         }
 
