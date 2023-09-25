@@ -10,7 +10,7 @@ public:
     double aspect_ratio = 1.0; // Ratio of image width over height
     int image_width = 1;       // Rendered image width in pixel count
 
-    void render(const hittable &world)
+    void render(const hittable_list/* don't get it, but it works, and it won't work when get const hittable here*/ &world)
     {
         initialize();
 
@@ -29,11 +29,12 @@ public:
 
         // Rendering
         cout << "P3\n"
-             << image_width << ' ' << image_height << "\n255" << endl;
+             << image_width << ' ' << image_height << "\n255\n";
 
         for (int j = 0; j < image_height; ++j)
         {
             // Load Threads
+            // Bug here: C2259
             threads.emplace_back(threading_func, world, center, pixel00_pos, pixel_delta_u, pixel_delta_v, j, image_width, buffer);
         }
 

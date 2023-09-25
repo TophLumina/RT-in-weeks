@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ray.h"
+#include "interval.h"
 
 class hit_info
 {
