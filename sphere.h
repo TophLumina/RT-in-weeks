@@ -9,7 +9,7 @@ public:
     sphere(point3 _center, double _radius) : center(_center), radius(_radius) {}
 
     // According to ray info load the hit_info if hit
-    bool hit(const ray &r, double ray_tmin, double ray_tmax, hit_info &info) const override
+    bool hit(const ray &r, interval ray_t, hit_info &info) const override
     {
         vec3 oc = r.origin() - center;
         auto a = r.direction().length_squared();
@@ -22,11 +22,12 @@ public:
 
         auto sqrtd = sqrt(discriminant);
 
+        // Nearest root within ray_t(t_min -> t_max)
         auto root = (-half_b - sqrtd) / a;
-        if (root <= ray_tmin || root >= ray_tmax)
+        if (!ray_t.surrounds(root))
         {
             root = (-half_b + sqrtd) / a;
-            if (root <= ray_tmin || root >= ray_tmax)
+            if (!ray_t.surrounds(root))
                 return false;
         }
 

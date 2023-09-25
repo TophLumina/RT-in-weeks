@@ -17,5 +17,6 @@ const double PI = 3.1415926535897932385;
 inline double degree2radius(double degrees) { return degrees / 180.0 * PI; }
 
 // Headers
+#include "interval.h"
 #include "vec3.h"
 #include "ray.h"

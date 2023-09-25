@@ -20,7 +20,7 @@ using namespace std;
 color ray_color(const ray &r, const hittable &world)
 {
     hit_info info;
-    if (world.hit(r, 0, infinity, info))
+    if (world.hit(r, interval(0, infinity), info))
         return 0.5 * info.normal + 0.5;
 
     vec3 unit_direction = normalize(r.direction());
