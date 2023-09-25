@@ -12,9 +12,9 @@ int main()
     camera cam;
 
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 1600;
+    cam.image_width = 800;
     cam.samplers_per_pixel = 64;
-    // cam.ray_gen_possibility = 0.96;
+    cam.ray_gen_probability = 0.96;
 
     cam.render(world);
 }

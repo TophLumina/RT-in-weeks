@@ -9,7 +9,7 @@ public:
     sphere(point3 _center, double _radius) : center(_center), radius(_radius) {}
 
     // According to ray info load the hit_info if hit
-    bool hit(const ray &r, interval ray_t, hit_info &info) const override
+    bool hit(const ray &r, interval ray_t, hit_info &hit) const override
     {
         vec3 oc = r.origin() - center;
         auto a = r.direction().length_squared();
@@ -31,10 +31,10 @@ public:
                 return false;
         }
 
-        info.t = root;
-        info.hit_point = r.at(info.t);
-        vec3 outward_normal = (info.hit_point - center) / radius;
-        info.set_face_normal(r, outward_normal);
+        hit.t = root;
+        hit.hit_point = r.at(hit.t);
+        vec3 outward_normal = (hit.hit_point - center) / radius;
+        hit.set_face_normal(r, outward_normal);
 
         return true;
     }

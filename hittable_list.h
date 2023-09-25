@@ -27,7 +27,7 @@ public:
         objects.push_back(object);
     }
 
-    bool hit(const ray &r, interval ray_t, hit_info &info) const override
+    bool hit(const ray &r, interval ray_t, hit_info &hit) const override
     {
         hit_info tmp;
         bool hit_any = false;
@@ -39,7 +39,7 @@ public:
             {
                 hit_any = true;
                 closest_so_far = tmp.t;
-                info = tmp;
+                hit = tmp;
             }
         }
 

@@ -46,7 +46,9 @@ public:
             if (threads[j].joinable())
                 threads[j].join();
 
-        clog << "\rCalculation Done. Now Transferring Data to target.ppm" << endl;
+        auto trace_end = chrono::steady_clock::now();
+        auto tracing_time = chrono::duration_cast<chrono::seconds>(trace_end - start);
+        clog << "\rTracing Completed. Ray Tracing Time: " << tracing_time.count() << "s" << endl;
 
         // Transfer data from buffer to img
         for (int j = 0; j < image_height; ++j)
@@ -60,7 +62,7 @@ public:
         auto transfer_end = chrono::steady_clock::now();
         auto rendering_time = chrono::duration_cast<chrono::seconds>(transfer_end - start);
 
-        std::clog << "\nDone. Total Rendering Time: " << rendering_time.count() << 's' << endl;
+        std::clog << "Data Transfer Completed. Total Rendering Time: " << rendering_time.count() << 's' << endl;
 
         // Releasing resource
         for (int i = 0; i < image_height; ++i)
