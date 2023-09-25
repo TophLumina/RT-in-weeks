@@ -29,7 +29,7 @@ color ray_color(const ray &r, const hittable &world)
 }
 
 // Line Counter for MultiThreading
-atomic<int> line_rendered = 0;
+atomic<int> line_rendered(0);
 // Funcs for supporting MultiThreading (One thread handle a line)
 void threading_func(const hittable &world, point3 camera_pos, point3 pixel00_pos, vec3 delta_u, vec3 delta_v, int index_row, int length_row, color **buffer)
 {
