@@ -17,7 +17,7 @@ int main(int argc, char const *argv[])
     // Image
     ofstream out("./image.ppm", ios::out);
     auto aspect_ratio = 16.0 / 9.0;
-    int img_width = 800;
+    int img_width = 1600;
 
     int img_height = static_cast<int>(img_width / aspect_ratio);
     img_height = (img_height < 1) ? 1 : img_height; // img_height must > 1
@@ -32,7 +32,7 @@ int main(int argc, char const *argv[])
     // Camera
     auto focal_length = 1.0;
     auto viewport_height = 2.0;
-    auto viewport_width = viewport_height * static_cast<double>(img_width) / img_height;
+    auto viewport_width = viewport_height * static_cast<double>(img_width / img_height);
     auto camera_center = point3(0, 0, 0);
 
     // Vectors of viewport delta_pixel offsets
@@ -106,5 +106,5 @@ int main(int argc, char const *argv[])
     threads.clear();
 
     out.close();
-    std::clog << "\nTransfer Done. Total Rendering Time: " << rendering_time.count() << 's' << endl;
+    std::clog << "\nDone. Total Rendering Time: " << rendering_time.count() << 's' << endl;
 }
