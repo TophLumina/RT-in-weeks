@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 
 // MultiThread
 #include <vector>
@@ -59,7 +58,7 @@ void threading_indicator_func(int total_lines)
     clog << "\rRendered Lines: " << line_rendered << " / " << total_lines << flush;
 
     auto timer = chrono::steady_clock::now();
-    timer = timer + chrono::microseconds(500);
+    timer = timer + chrono::microseconds(20);
     this_thread::sleep_until(timer);
     threading_indicator_func(total_lines);
 }

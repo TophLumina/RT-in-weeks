@@ -12,7 +12,6 @@ using namespace std;
 
 int main(int argc, char const *argv[])
 {
-
     // Image
     auto aspect_ratio = 16.0 / 9.0;
     int img_width = 1600;
@@ -58,8 +57,8 @@ int main(int argc, char const *argv[])
 
     // Render
     cout << "P3\n"
-        // P3 means color in ASCII
-        << img_width << ' ' << img_height << "\n255" << endl;
+         // P3 means color in ASCII
+         << img_width << ' ' << img_height << "\n255" << endl;
 
     for (int j = 0; j < img_height; ++j)
     {
@@ -67,13 +66,14 @@ int main(int argc, char const *argv[])
         threads.emplace_back(threading_func, world, camera_center, pixel00_position, pixel_delta_u, pixel_delta_v, j, img_width, buffer);
     }
 
-    for (int j = 0; j < img_height; ++j)
-        threads[j].join();
-
     thread thread_indicator(threading_indicator_func, img_height);
     thread_indicator.detach();
 
-    clog << "Calculation Done. Now Transferring Data to target.ppm" << endl;
+    for (int j = 0; j < img_height; ++j)
+        if (threads[j].joinable())
+            threads[j].join();
+
+    clog << "\rCalculation Done. Now Transferring Data to target.ppm" << endl;
 
     // Transfer color from buffer to img
     for (int j = 0; j < img_height; ++j)
@@ -97,3 +97,24 @@ int main(int argc, char const *argv[])
 
     std::clog << "\nDone. Total Rendering Time: " << rendering_time.count() << 's' << endl;
 }
+
+// #include "rtweekend.h"
+
+// #include "camera.h"
+// #include "hittable_list.h"
+// #include "sphere.h"
+
+// int main()
+// {
+//     hittable_list world;
+
+//     world.add(make_shared<sphere>(point3(0, 0, -1), 0.5));
+//     world.add(make_shared<sphere>(point3(0, -100.5, -1), 100));
+
+//     camera cam;
+
+//     cam.aspect_ratio = 16.0 / 9.0;
+//     cam.image_width = 400;
+
+//     cam.render(world);
+// }
