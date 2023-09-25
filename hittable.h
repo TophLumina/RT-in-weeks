@@ -6,7 +6,7 @@
 class hit_info
 {
 public:
-    point3 p;
+    point3 hit_point;
     vec3 normal;
     double t;
     bool front_face;

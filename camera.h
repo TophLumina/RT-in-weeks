@@ -9,7 +9,7 @@ class camera
 public:
     double aspect_ratio = 1.0;   // Ratio of image width over height
     int image_width = 1;         // Rendered image width in pixel count
-    int samplers_per_pixel = 100;// Amount of samplers for each pixel
+    int samplers_per_pixel = 64;// Amount of samplers for each pixel
 
     void render(const hittable_list/* don't get it, but it works, and it won't work when get const hittable here*/ &world)
     {

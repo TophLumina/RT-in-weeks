@@ -32,8 +32,8 @@ public:
         }
 
         info.t = root;
-        info.p = r.at(info.t);
-        vec3 outward_normal = (info.p - center) / radius;
+        info.hit_point = r.at(info.t);
+        vec3 outward_normal = (info.hit_point - center) / radius;
         info.set_face_normal(r, outward_normal);
 
         return true;

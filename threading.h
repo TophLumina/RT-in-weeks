@@ -40,7 +40,10 @@ color ray_color(const ray &r, const hittable &world)
     hit_info info;
 
     if (world.hit(r, interval(0, infinity), info))
-        return 0.5 * info.normal + 0.5;
+    {
+        vec3 reflex_dir = random_on_hemisphere(info.normal);
+        return 0.5 * ray_color(ray(info.hit_point, reflex_dir), world);
+    }
 
     vec3 unit_direction = normalize(r.direction());
     auto a = 0.5 * (unit_direction.y() + 1.0);
