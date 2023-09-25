@@ -32,7 +32,7 @@ int main(int argc, char const *argv[])
     // Camera
     auto focal_length = 1.0;
     auto viewport_height = 2.0;
-    auto viewport_width = viewport_height * static_cast<double>(img_width / img_height);
+    auto viewport_width = viewport_height * static_cast<double>(img_width) / img_height;
     auto camera_center = point3(0, 0, 0);
 
     // Vectors of viewport delta_pixel offsets
