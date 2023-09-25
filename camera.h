@@ -29,7 +29,6 @@ public:
 
         // Rendering
         cout << "P3\n"
-             // P3 means color in ASCII
              << image_width << ' ' << image_height << "\n255" << endl;
 
         for (int j = 0; j < image_height; ++j)
