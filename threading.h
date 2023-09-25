@@ -35,14 +35,21 @@ ray get_ray(point3 origin, point3 pixel00_pos, vec3 pixel_delta_u, vec3 pixel_de
     return ray(origin, ray_direction);
 }
 
-color ray_color(const ray &r, const hittable &world)
+color ray_color(const ray &r, const hittable &world, double ray_gen_probability)
 {
     hit_info info;
 
-    if (world.hit(r, interval(0, infinity), info))
+    // Simply address the floating point error on intersection by ignoring intersecting point which is close enough to surfaces
+    if (world.hit(r, interval(0.001, infinity), info))
     {
-        vec3 reflex_dir = random_on_hemisphere(info.normal);
-        return 0.5 * ray_color(ray(info.hit_point, reflex_dir), world);
+        double p = random_double();
+        if (p < ray_gen_probability)
+        {
+            vec3 reflex_dir = random_on_hemisphere(info.normal);
+            return 0.5 * ray_color(ray(info.hit_point, reflex_dir), world, ray_gen_probability);
+        }
+        else
+            return color();
     }
 
     vec3 unit_direction = normalize(r.direction());
@@ -53,7 +60,7 @@ color ray_color(const ray &r, const hittable &world)
 // Line Counter for MultiThreading
 atomic<int> line_rendered(0);
 // Funcs for supporting MultiThreading (One thread handle a line)
-void threading_func(const hittable &world, point3 camera_pos, point3 pixel00_pos, vec3 pixel_delta_u, vec3 pixel_delta_v, int index_row, int length_row, int samplers_per_pixel, color **buffer)
+void threading_func(const hittable &world, point3 camera_pos, point3 pixel00_pos, vec3 pixel_delta_u, vec3 pixel_delta_v, int index_row, int length_row, int samplers_per_pixel, double ray_gen_probability, color **buffer)
 {
     for (int i = 0; i < length_row; ++i)
     {
@@ -61,9 +68,9 @@ void threading_func(const hittable &world, point3 camera_pos, point3 pixel00_pos
         for (int sample = 0; sample < samplers_per_pixel; ++sample)
         {
             ray r = get_ray(camera_pos, pixel00_pos, pixel_delta_u, pixel_delta_v, index_row, i);
-            pixel_color += ray_color(r, world);
+            pixel_color += ray_color(r, world, ray_gen_probability);
         }
-        
+
         // Write all color into buffer
         buffer[index_row][i] = pixel_color;
     }
@@ -73,15 +80,9 @@ void threading_func(const hittable &world, point3 camera_pos, point3 pixel00_pos
 
 void threading_indicator_func(int total_lines)
 {
-    if (line_rendered >= total_lines)
+    while (line_rendered < total_lines)
     {
-        return;
+        clog << "\rRendered Lines: " << line_rendered << " / " << total_lines << flush;
+        this_thread::sleep_for(chrono::microseconds(250));
     }
-
-    clog << "\rRendered Lines: " << line_rendered << " / " << total_lines << flush;
-
-    auto timer = chrono::steady_clock::now();
-    timer = timer + chrono::microseconds(20);
-    this_thread::sleep_until(timer);
-    threading_indicator_func(total_lines);
 }
