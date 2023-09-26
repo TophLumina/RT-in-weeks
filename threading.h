@@ -8,10 +8,9 @@
 #include <chrono>
 
 #include "rtweekend.h"
-#include "hittable.h"
 #include "sphere.h"
 #include "hittable_list.h"
-#include "color.h"
+#include "material.h"
 
 using namespace std;
 
@@ -45,11 +44,13 @@ color ray_color(const ray &r, const hittable &world, double ray_gen_probability)
         double p = random_double();
         if (p < ray_gen_probability)
         {
-            vec3 reflex_dir = hit.normal + random_unit_vector(); // Using Lambertian Reflection
-            return 0.5 * ray_color(ray(hit.hit_point, reflex_dir), world, ray_gen_probability);
+            ray scattered;
+            color attenuation;
+
+            if (hit.mat -> scatter(r, hit, attenuation, scattered))
+                return attenuation * ray_color(scattered, world, ray_gen_probability);
         }
-        else
-            return color();
+        return color();
     }
 
     vec3 unit_direction = normalize(r.direction());

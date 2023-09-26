@@ -1,13 +1,15 @@
 #pragma once
 
-#include "ray.h"
-#include "interval.h"
+#include "rtweekend.h"
+
+class material;
 
 class hit_info
 {
 public:
     point3 hit_point;
     vec3 normal;
+    shared_ptr<material> mat;
     double t;
     bool front_face;
 

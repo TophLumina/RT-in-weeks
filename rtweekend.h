@@ -32,4 +32,6 @@ inline double random_double(double min, double max) { return min + (max - min) *
 // Headers
 #include "interval.h"
 #include "vec3.h"
+#include "color.h"
 #include "ray.h"
+#include "hittable.h"
