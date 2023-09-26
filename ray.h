@@ -18,5 +18,5 @@ class ray
 
 private:
     point3 orig;
-    vec3 dir;
+    vec3 dir; // Be aware that direction may not been normalized
 };
