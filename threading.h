@@ -56,7 +56,7 @@ public:
         while (thread_finished < total_lines)
         {
             clog << "\rLines Rendered: " << thread_finished << " / " << total_lines << flush;
-            this_thread::sleep_for(chrono::microseconds(250));
+            this_thread::sleep_for(chrono::microseconds(500));
         }
     }
 
