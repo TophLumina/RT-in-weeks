@@ -14,9 +14,12 @@ public:
     double ray_gen_probability = 0.6; // Probability of ray generation. (Instead of using max depth, let's try Russian Roulette!)
 
     double vfov = 90;                   // Vertical field of view
-    point3 lookfrom = point3(0, 0, -1);  // Point where camera is looking from
-    point3 lookat = point3(0, 0, 0);   // Point where camera is looking at
+    point3 lookfrom = point3(0, 0, -1); // Point where camera is looking from
+    point3 lookat = point3(0, 0, 0);    // Point where camera is looking at
     vec3 vup = vec3(0, 1, 0);           // Absolute up direction (world space)
+
+    double defocus_angle = 0; // Variation angle of rays through each pixel
+    double focus_dist = 10;   // Distance form camera lookfrom point to perfect focus plane
 
     // Rendering
     void render(const hittable_list /* don't get it, but it works, and it won't work when get const hittable here*/ &world)
@@ -39,15 +42,17 @@ public:
         for (int j = 0; j < image_height; ++j)
         {
             // Load Threads
-            threads.emplace_back(threading_func, world, center, pixel00_pos, pixel_delta_u, pixel_delta_v, j, image_width, samplers_per_pixel, ray_gen_probability, buffer);
+            threads.emplace_back(threading::threading_line_renderer, world, fill_data_block(j), buffer);
         }
 
-        thread thread_indicator(threading_indicator_func, image_height);
+        thread thread_indicator(threading::threading_indicator, image_height);
         thread_indicator.detach();
 
         for (int j = 0; j < image_height; ++j)
             if (threads[j].joinable())
                 threads[j].join();
+
+        threading::manual_reset();
 
         auto trace_end = chrono::steady_clock::now();
         auto tracing_time = chrono::duration_cast<chrono::seconds>(trace_end - start);
@@ -85,6 +90,8 @@ private:
     vec3 pixel_delta_u; // Offset to pixel to the right
     vec3 pixel_delta_v; // Offset to pixel below
     vec3 u, v, w;       // Camera frame basis vectors
+    vec3 defocus_disk_u;// Defocus disk horizontal radius
+    vec3 defocus_disk_v;// Defocus disk vertical radius
 
     void initialize()
     {
@@ -94,10 +101,9 @@ private:
         center = lookfrom;
 
         // Viewport
-        auto focal_length = (lookfrom - lookat).length();
         auto theta = degree2radius(vfov);
         auto h = tan(theta / 2);
-        auto viewport_height = 2.0 * h * focal_length;
+        auto viewport_height = 2.0 * h * focus_dist;
         auto viewport_width = viewport_height * static_cast<double>(image_width) / image_height;
 
         // u, v, w Unit basis vectors for camera coordinate frame
@@ -114,7 +120,31 @@ private:
         pixel_delta_v = viewport_v / image_height;
 
         // Position of pixel (0, 0)
-        auto viewport_upper_left = center - w * focal_length - viewport_u / 2 - viewport_v / 2;
+        auto viewport_upper_left = center - w * focus_dist - viewport_u / 2 - viewport_v / 2;
         pixel00_pos = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+
+        // Defocus disk basis vectors of camera
+        auto defocus_radius = focus_dist * (tan(degree2radius(defocus_angle / 2)));
+        defocus_disk_u = u * defocus_radius;
+        defocus_disk_v = v * defocus_radius;
+    }
+
+    // Utility Function for MultiThreading
+    line_renderer_data_block fill_data_block(int j) const
+    {
+        line_renderer_data_block data_block;
+        data_block.index_row = j;
+        data_block.length_row = image_width;
+        data_block.camera_pos = lookfrom;
+        data_block.pixel00_pos = pixel00_pos;
+        data_block.pixel_delta_u = pixel_delta_u;
+        data_block.pixel_delta_v = pixel_delta_v;
+        data_block.ray_gen_probability = ray_gen_probability;
+        data_block.samplers_per_pixel = samplers_per_pixel;
+        data_block.defocus_angle = defocus_angle;
+        data_block.defocus_disk_u = defocus_disk_u;
+        data_block.defocus_disk_v = defocus_disk_v;
+
+        return data_block;
     }
 };

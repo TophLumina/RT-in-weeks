@@ -130,6 +130,16 @@ inline vec3 normalize(vec3 v)
     return v / v.length();
 }
 
+inline vec3 random_in_unit_disk()
+{
+    while(1)
+    {
+        auto p = vec3(random_double(-1, 1), random_double(-1, 1), 0);
+        if (p.length_squared() < 1)
+            return p;
+    }
+}
+
 inline vec3 random_in_unit_sphere()
 {
     while(1)
