@@ -59,12 +59,39 @@ public:
 
     bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered) const override
     {
-        attenuation = color(1.0, 1.0, 1.0);
+        attenuation = color(1.0, 1.0, 1.0); // Material like glass or water usually absorb nothing, so there is no effect on the incoming ray
         double refraction_ratio = hit.front_face ? (1.0 / ir) : ir;
 
-        // TODO::Finish Glass Material
+        vec3 in_normalized = normalize(r_in.direction());
+        double cos_theta = fmin(dot(-in_normalized, hit.normal), 1.0);
+        double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+
+        bool is_full_reflection = (refraction_ratio * sin_theta > 1.0);
+        vec3 out;
+
+        if (is_full_reflection || reflectance(cos_theta, refraction_ratio) > random_double()) // Full reflection here
+        {
+            out = reflect(in_normalized, hit.normal);
+        }
+        else // Reflection + Refraction
+        {
+            out = refract(in_normalized, hit.normal, refraction_ratio);
+        }
+
+        scattered = ray(hit.hit_point, out);
+        return true;
     }
 
 private:
     double ir; // Index of Reflection
+    // Common Material: Water/Glass: 1.3 - 1.7
+    //                  Diamond:     2.4
+
+    static double reflectance(double cosine, double reflectance_index)
+    {
+        // Schlicks's approximation for reflectance
+        auto r0 = (1 - reflectance_index) / (1 + reflectance_index);
+        r0 *= r0;
+        return r0 + (1 - r0) * pow((1 - cosine), 5);
+    }
 };

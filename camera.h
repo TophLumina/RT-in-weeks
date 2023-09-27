@@ -1,18 +1,20 @@
 #pragma once
 
 #include "rtweekend.h"
+#include "thread"
 
 #include "threading.h"
 
 class camera
 {
 public:
-    double aspect_ratio = 1.0;          // Ratio of image width over height
-    int image_width = 1;                // Rendered image width in pixel count
-    int samplers_per_pixel = 10;        // Amount of samplers for each pixel
-    double ray_gen_probability = 0.6;   // Probability of ray generation. (Instead of using max depth, let's try Russian Roulette!)
+    double aspect_ratio = 1.0;        // Ratio of image width over height
+    int image_width = 1;              // Rendered image width in pixel count
+    int samplers_per_pixel = 10;      // Amount of samplers for each pixel
+    double ray_gen_probability = 0.6; // Probability of ray generation. (Instead of using max depth, let's try Russian Roulette!)
 
-    void render(const hittable_list/* don't get it, but it works, and it won't work when get const hittable here*/ &world)
+    // Rendering
+    void render(const hittable_list /* don't get it, but it works, and it won't work when get const hittable here*/ &world)
     {
         initialize();
 
@@ -28,10 +30,6 @@ public:
 
         // Timer
         auto start = chrono::steady_clock::now();
-
-        // Rendering
-        cout << "P3\n"
-             << image_width << ' ' << image_height << "\n255\n";
 
         for (int j = 0; j < image_height; ++j)
         {
@@ -51,6 +49,8 @@ public:
         clog << "\rTracing Completed. Ray Tracing Time: " << tracing_time.count() << "s" << endl;
 
         // Transfer data from buffer to img
+        cout << "P3\n"
+             << image_width << ' ' << image_height << "\n255\n";
         for (int j = 0; j < image_height; ++j)
         {
             for (int i = 0; i < image_width; ++i)

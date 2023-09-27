@@ -83,7 +83,7 @@ void threading_indicator_func(int total_lines)
 {
     while (line_rendered < total_lines)
     {
-        clog << "\rRendered Lines: " << line_rendered << " / " << total_lines << flush;
+        clog << "\rLines Rendered: " << line_rendered << " / " << total_lines << flush;
         this_thread::sleep_for(chrono::microseconds(250));
     }
 }
