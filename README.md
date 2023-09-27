@@ -11,6 +11,8 @@ cmake --build build
 
 and you should find executable in *./build*.
 
+***BE AWARE!!*** Due to my poor coding technics, your PC is much likely to be ***FROZEN*** during the run. Sorry about that :(
+
 Here comes some images rendered from the little Ray Tracer :)
 
 ![Many Spheres](./img/image.png "Rendering Result 01")
