@@ -60,7 +60,7 @@ int main()
 
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1200;
-    cam.samplers_per_pixel = 512;
+    cam.samplers_per_pixel = 256;
     cam.ray_gen_probability = 0.92;
 
     cam.vfov = 20;

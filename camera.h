@@ -42,7 +42,7 @@ public:
         for (int j = 0; j < image_height; ++j)
         {
             // Load Threads
-            threads.emplace_back(threading::threading_line_renderer, world, fill_data_block(j), buffer);
+            threads.emplace_back(render_line, this, world, j, buffer);
         }
 
         thread thread_indicator(threading::threading_indicator, image_height);
@@ -51,8 +51,6 @@ public:
         for (int j = 0; j < image_height; ++j)
             if (threads[j].joinable())
                 threads[j].join();
-
-        threading::manual_reset();
 
         auto trace_end = chrono::steady_clock::now();
         auto tracing_time = chrono::duration_cast<chrono::seconds>(trace_end - start);
@@ -84,14 +82,14 @@ public:
     }
 
 private:
-    int image_height;   // Rendered image height
-    point3 center;      // Camera center
-    point3 pixel00_pos; // Position of pixel (0, 0)
-    vec3 pixel_delta_u; // Offset to pixel to the right
-    vec3 pixel_delta_v; // Offset to pixel below
-    vec3 u, v, w;       // Camera frame basis vectors
-    vec3 defocus_disk_u;// Defocus disk horizontal radius
-    vec3 defocus_disk_v;// Defocus disk vertical radius
+    int image_height;    // Rendered image height
+    point3 center;       // Camera center
+    point3 pixel00_pos;  // Position of pixel (0, 0)
+    vec3 pixel_delta_u;  // Offset to pixel to the right
+    vec3 pixel_delta_v;  // Offset to pixel below
+    vec3 u, v, w;        // Camera frame basis vectors
+    vec3 defocus_disk_u; // Defocus disk horizontal radius
+    vec3 defocus_disk_v; // Defocus disk vertical radius
 
     void initialize()
     {
@@ -129,22 +127,75 @@ private:
         defocus_disk_v = v * defocus_radius;
     }
 
-    // Utility Function for MultiThreading
-    line_renderer_data_block fill_data_block(int j) const
+    // Return a random offset in the square around pixel
+    vec3 pixel_sample_square()
     {
-        line_renderer_data_block data_block;
-        data_block.index_row = j;
-        data_block.length_row = image_width;
-        data_block.camera_pos = lookfrom;
-        data_block.pixel00_pos = pixel00_pos;
-        data_block.pixel_delta_u = pixel_delta_u;
-        data_block.pixel_delta_v = pixel_delta_v;
-        data_block.ray_gen_probability = ray_gen_probability;
-        data_block.samplers_per_pixel = samplers_per_pixel;
-        data_block.defocus_angle = defocus_angle;
-        data_block.defocus_disk_u = defocus_disk_u;
-        data_block.defocus_disk_v = defocus_disk_v;
+        auto px = -0.5 + random_double();
+        auto py = -0.5 + random_double();
 
-        return data_block;
+        return (px * pixel_delta_u) + (py * pixel_delta_v);
+    }
+
+    // Return a random point in the camera defocus disk
+    point3 defocus_disk_sample()
+    {
+        auto p = random_in_unit_disk();
+        return center + p[0] * defocus_disk_u + p[1] * defocus_disk_v;
+    }
+
+    // Return a randomly sampled ray for pixel i, j, originating from the camera defocus disk
+    ray get_primary_ray(int i, int j)
+    {
+        auto pixel_center = pixel00_pos + (j * pixel_delta_u) + (i * pixel_delta_v);
+        auto pixel_sample = pixel_center + pixel_sample_square();
+
+        auto ray_origin = defocus_angle <= 0 ? center : defocus_disk_sample();
+
+        auto ray_direction = pixel_sample - ray_origin;
+
+        return ray(ray_origin, ray_direction);
+    }
+
+    color ray_color(const ray &r, const hittable &world, double ray_gen_probability)
+    {
+        hit_info hit;
+
+        // Simply address the floating point error on intersection by ignoring intersecting point which is close enough to surfaces
+        if (world.hit(r, interval(0.001, infinity), hit))
+        {
+            double p = random_double();
+            if (p < ray_gen_probability)
+            {
+                ray scattered;
+                color attenuation;
+
+                if (hit.mat->scatter(r, hit, attenuation, scattered))
+                    return attenuation * ray_color(scattered, world, ray_gen_probability);
+            }
+            return color();
+        }
+
+        vec3 unit_direction = normalize(r.direction());
+        auto a = 0.5 * (unit_direction.y() + 1.0);
+        return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0); // Serve as Sky Color ()
+    }
+
+    // Funcs for MultiThreading (each thread handle a line)
+    void render_line(const hittable &world, int index_row, color **const buffer)
+    {
+        for (int i = 0; i < image_width; ++i)
+        {
+            color pixel_color(0, 0, 0);
+            for (int sample = 0; sample < samplers_per_pixel; ++sample)
+            {
+                ray r = get_primary_ray(index_row, i);
+                pixel_color += ray_color(r, world, ray_gen_probability);
+            }
+
+            // Write all color into buffer
+            buffer[index_row][i] = pixel_color;
+        }
+
+        ++threading::thread_finished;
     }
 };
