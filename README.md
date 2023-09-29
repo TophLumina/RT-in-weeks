@@ -1,8 +1,8 @@
-# RT in a weekend
+# RT in weeks
 
 Just simply use whatever buildtool you have(it's Cmake to me) to build and run.
 
-under prject folder:
+under project folder:
 
 ```powershell
 cmake . -Bbuild
