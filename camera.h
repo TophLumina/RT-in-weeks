@@ -20,6 +20,7 @@ public:
 
     double defocus_angle = 0; // Variation angle of rays through each pixel
     double focus_dist = 10;   // Distance form camera lookfrom point to perfect focus plane
+    double frame_duration = 1.0;
 
     // Rendering
     void render(const hittable_list /* don't get it, but it works, and it won't work when get const hittable here*/ &world)
@@ -153,7 +154,9 @@ private:
 
         auto ray_direction = pixel_sample - ray_origin;
 
-        return ray(ray_origin, ray_direction);
+        // Launch rays in a shutter opening duration
+        double ray_time = random_double(0, frame_duration);
+        return ray(ray_origin, ray_direction, ray_time);
     }
 
     color ray_color(const ray &r, const hittable &world, double ray_gen_probability)

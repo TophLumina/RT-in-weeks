@@ -17,6 +17,7 @@ int main()
         {
             auto mat_indicator = random_double();
             point3 center(i + 0.9 * random_double(), 0.2, j + 0.9 * random_double());
+            point3 center2 = center;
 
             if ((center - point3(4, 0.2, 0)).length() > 0.9)
             {
@@ -26,6 +27,7 @@ int main()
                 {
                     // diffuse
                     auto albedo = color::random() * color::random();
+                    center2 = center + vec3(0, random_double(0, .5), 0);
                     sphere_material = make_shared<lambertian>(albedo);
                 }
                 else if (mat_indicator < 0.95)
@@ -41,7 +43,7 @@ int main()
                     sphere_material = make_shared<dielectric>(1.5);
                 }
 
-                world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                world.add(make_shared<sphere>(center, center2, 0.2, sphere_material));
             }
         }
     }
@@ -60,7 +62,7 @@ int main()
 
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1200;
-    cam.samplers_per_pixel = 512;
+    cam.samplers_per_pixel = 32;
     cam.ray_gen_probability = 0.92;
 
     cam.vfov = 20;
@@ -70,6 +72,7 @@ int main()
 
     cam.defocus_angle = 0.6;
     cam.focus_dist = 10.0;
+    cam.frame_duration = 1.0;
 
     clog << "Samplers: " << cam.samplers_per_pixel << '\n';
 

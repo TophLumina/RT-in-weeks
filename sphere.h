@@ -6,11 +6,22 @@
 class sphere : public hittable
 {
 public:
-    sphere(point3 _center, double _radius, shared_ptr<material> _material) : center(_center), radius(_radius), mat(_material) {}
+    sphere(point3 _center1, double _radius, shared_ptr<material> _material) : center0(_center1), radius(_radius), mat(_material)
+    {
+        is_moving = false;
+        center_vec = vec3();
+    }
+
+    sphere(point3 _center1, point3 _center2, double _radius, shared_ptr<material> _material) : center0(_center1), radius(_radius), mat(_material)
+    {
+        is_moving = _center1 == _center2 ? false : true;
+        center_vec = _center1 == _center2 ? vec3() : _center2 - _center1;
+    }
 
     // According to ray info load the hit_info if hit
     bool hit(const ray &r, interval ray_t, hit_info &hit) const override
     {
+        point3 center = is_moving ? sphere::center(r.time()) : center0;
         vec3 oc = r.origin() - center;
         auto a = r.direction().length_squared();
         auto half_b = dot(r.direction(), oc);
@@ -41,7 +52,14 @@ public:
     }
 
 private:
-    point3 center;
+    point3 center0;
     double radius;
     shared_ptr<material> mat;
+    bool is_moving;
+    vec3 center_vec;
+
+    point3 center(double time) const
+    {
+        return is_moving ? center0 + time * center_vec : center0;
+    }
 };

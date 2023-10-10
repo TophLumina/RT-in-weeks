@@ -25,7 +25,7 @@ public:
         if (scatter_direction.near_zero())
             scatter_direction = hit.normal;
 
-        scattered = ray(hit.hit_point, scatter_direction);
+        scattered = ray(hit.hit_point, scatter_direction, r_in.time());
         attenuation = albedo;
         return true;
     }
@@ -42,7 +42,7 @@ public:
     bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered) const override
     {
         vec3 reflected = reflect(normalize(r_in.direction()), hit.normal);
-        scattered = ray(hit.hit_point, reflected + fuzz * random_unit_vector());
+        scattered = ray(hit.hit_point, reflected + fuzz * random_unit_vector(), r_in.time());
         attenuation = albedo;
         return dot(scattered.direction(), hit.normal) > 0; // Ensure that fuzz_scattered ray comes out
     }
@@ -78,7 +78,7 @@ public:
             out = refract(in_normalized, hit.normal, refraction_ratio);
         }
 
-        scattered = ray(hit.hit_point, out);
+        scattered = ray(hit.hit_point, out, r_in.time());
         return true;
     }
 
