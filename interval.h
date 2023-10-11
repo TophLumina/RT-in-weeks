@@ -28,6 +28,14 @@ public:
         return x;
     }
 
+    double size() const { return max - min; }
+
+    interval expand(double delta) const
+    {
+        auto padding = delta / 2;
+        return interval(min - padding, max + padding);
+    }
+
     static const interval empty, universe;
 };
 
