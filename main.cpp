@@ -4,7 +4,7 @@
 #include "material.h"
 #include "camera.h"
 
-#include "BVH.h"
+// #include "BVH.h"
 
 int main()
 {
@@ -29,7 +29,7 @@ int main()
                 {
                     // diffuse
                     auto albedo = color::random() * color::random();
-                    center2 = center + vec3(0, random_double(0, .5), 0);
+                    // center2 = center + vec3(0, random_double(0, .5), 0);
                     sphere_material = make_shared<lambertian>(albedo);
                 }
                 else if (mat_indicator < 0.95)
@@ -61,13 +61,14 @@ int main()
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
     // ?
-    world = hittable_list(make_shared<bvh_node>(world));
+    // shared_ptr<bvh_node> bvh = make_shared<bvh_node>(world);
+    // world = hittable_list(bvh);
 
     camera cam;
 
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 400;
-    cam.samplers_per_pixel = 32;
+    cam.image_width = 1200;
+    cam.samplers_per_pixel = 16;
     cam.ray_gen_probability = 0.92;
 
     cam.vfov = 20;

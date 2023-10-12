@@ -57,6 +57,7 @@ public:
         if (!bbox.hit(r, ray_t))
             return false;
 
+        // when loop into leaf node, right/left should be sphere
         bool hit_l = left->hit(r, ray_t, hit);
         bool hit_r = right->hit(r, interval(ray_t.min, /*if left hit, then check any hit before left hit*/ hit_l ? hit.t : ray_t.max), hit);
 
