@@ -19,6 +19,13 @@ public:
         z = interval(fmin(a.e[2], b.e[2]), fmax(a.e[2], b.e[2]));
     }
 
+    aabb(const aabb& a, const aabb& b)
+    {
+        x = interval(a.x, b.x);
+        y = interval(a.y, b.y);
+        z = interval(a.z, b.z);
+    }
+
     const interval& axis(int i) const
     {
         if (i == 1)

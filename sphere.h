@@ -6,16 +6,21 @@
 class sphere : public hittable
 {
 public:
-    sphere(point3 _center1, double _radius, shared_ptr<material> _material) : center0(_center1), radius(_radius), mat(_material)
-    {
-        is_moving = false;
-        center_vec = vec3();
-    }
+    sphere(point3 _center1, double _radius, shared_ptr<material> _material) : sphere(_center1, _center1, radius, _material) {}
 
-    sphere(point3 _center1, point3 _center2, double _radius, shared_ptr<material> _material) : center0(_center1), radius(_radius), mat(_material)
+    sphere(point3 _center1, point3 _center2, double _radius, shared_ptr<material> _material) : center0(_center1), radius(_radius), mat(_material), is_moving(_center1 == _center2 ? false : true), center_vec(_center1 == _center2 ? vec3() : _center2 - _center1)
     {
-        is_moving = _center1 == _center2 ? false : true;
-        center_vec = _center1 == _center2 ? vec3() : _center2 - _center1;
+        vec3 rvec = vec3(radius, radius, radius);
+        if (is_moving)
+        {
+            aabb box0 = aabb(_center1 + rvec, _center1 - rvec);
+            aabb box1 = aabb(_center2 + rvec, _center2 - rvec);
+            bbox = aabb(box0, box1);
+        }
+        else
+        {
+            bbox = aabb(center0 + rvec, center0 - rvec);
+        }
     }
 
     // According to ray info load the hit_info if hit
@@ -51,12 +56,18 @@ public:
         return true;
     }
 
+    aabb bounding_box() const override
+    {
+        return bbox;
+    }
+
 private:
     point3 center0;
     double radius;
     shared_ptr<material> mat;
     bool is_moving;
     vec3 center_vec;
+    aabb bbox;
 
     point3 center(double time) const
     {

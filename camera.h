@@ -23,7 +23,7 @@ public:
     double frame_duration = 1.0;
 
     // Rendering
-    void render(const hittable_list /* don't get it, but it works, and it won't work when get const hittable here*/ &world)
+    void render(const hittable /* don't get it, but it works, and it won't work with 'const hittable' here*/ &world)
     {
         initialize();
 
@@ -42,16 +42,21 @@ public:
 
         for (int j = 0; j < image_height; ++j)
         {
-            // Load Threads
-            threads.emplace_back(render_line, this, world, j, buffer);
+            render_line(world, j, buffer);
         }
 
-        thread thread_indicator(threading::threading_indicator, image_height);
-        thread_indicator.detach();
+        // for (int j = 0; j < image_height; ++j)
+        // {
+        //     // Load Threads
+        //     threads.emplace_back(&camera::render_line, this, world, j, buffer);
+        // }
 
-        for (int j = 0; j < image_height; ++j)
-            if (threads[j].joinable())
-                threads[j].join();
+        // thread thread_indicator(threading::threading_indicator, image_height);
+        // thread_indicator.detach();
+
+        // for (int j = 0; j < image_height; ++j)
+        //     if (threads[j].joinable())
+        //         threads[j].join();
 
         auto trace_end = chrono::steady_clock::now();
         auto tracing_time = chrono::duration_cast<chrono::seconds>(trace_end - start);
