@@ -4,7 +4,7 @@
 #include "material.h"
 #include "camera.h"
 
-// #include "BVH.h"
+#include "BVH.h"
 
 int main()
 {
@@ -60,15 +60,13 @@ int main()
     auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
-    // ?
-    // shared_ptr<bvh_node> bvh = make_shared<bvh_node>(world);
-    // world = hittable_list(bvh);
+    world = hittable_list(make_shared<bvh_node>(world));
 
     camera cam;
 
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1200;
-    cam.samplers_per_pixel = 16;
+    cam.samplers_per_pixel = 8;
     cam.ray_gen_probability = 0.92;
 
     cam.vfov = 20;
