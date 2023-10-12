@@ -6,11 +6,7 @@
 class sphere : public hittable
 {
 public:
-    sphere(point3 _center1, double _radius, shared_ptr<material> _material) : center0(_center1), radius(_radius), mat(_material), is_moving(false), center_vec(vec3())
-    {
-        vec3 rvec = vec3(radius, radius, radius);
-        bbox = aabb(_center1 + rvec, _center1 - rvec);
-    }
+    sphere(point3 _center1, double _radius, shared_ptr<material> _material) : sphere(_center1, _center1, _radius, _material) {}
 
     sphere(point3 _center1, point3 _center2, double _radius, shared_ptr<material> _material) : center0(_center1), radius(_radius), mat(_material), is_moving(_center1 == _center2 ? false : true), center_vec(_center1 == _center2 ? vec3() : _center2 - _center1)
     {

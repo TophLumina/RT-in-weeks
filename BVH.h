@@ -45,6 +45,10 @@ public:
             std::sort(objects.begin() + start, objects.begin() + end, comparator);
 
             auto mid = start + object_span / 2;
+            // no need to sort, just cut the vec by half will do the trick
+            // but std::sort() is still faster than our method :(
+            // kth_partition(objects, axis, start, end - 1, mid);
+
             left = make_shared<bvh_node>(objects, start, mid);
             right = make_shared<bvh_node>(objects, mid, end);
         }
@@ -89,5 +93,30 @@ private:
     static bool box_z_compare(const shared_ptr<hittable> a, const shared_ptr<hittable> b)
     {
         return box_compare(a, b, 2);
+    }
+
+    static void kth_partition(vector<shared_ptr<hittable>> &objects, int axis, size_t start, size_t end, size_t k)
+    {
+        shared_ptr<hittable> key = objects[k];
+
+        size_t i = start;
+        size_t j = end;
+
+        while (i < j)
+        {
+            while (box_compare(objects[j], key, axis) && i < j)
+                --j;
+            while (!box_compare(objects[i], key, axis) && i < j)
+                ++i;
+
+            std::swap(objects[i], objects[j]);
+        }
+
+        if (i == k)
+            return;
+        if (i > k)
+            kth_partition(objects, axis, start, i - 1, k);
+        if (i < k)
+            kth_partition(objects, axis, i + 1, end, k);
     }
 };
