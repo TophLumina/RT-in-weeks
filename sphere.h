@@ -51,6 +51,7 @@ public:
         hit.hit_point = r.at(hit.t);
         vec3 outward_normal = (hit.hit_point - center) / radius;
         hit.set_face_normal(r, outward_normal);
+        get_uv(outward_normal, hit.u, hit.v);
         hit.mat = mat;
 
         return true;
@@ -72,5 +73,21 @@ private:
     point3 center(double time) const
     {
         return is_moving ? center0 + time * center_vec : center0;
+    }
+
+    static void get_uv(const point3 &p, double &u, double &v)
+    {
+        // p: a given point on the sphere of radius one, centered at the origin
+        // u: returned value [0,1] of angle around the Y axis from X=-1
+        // v: returned value [0,1] of angle from Y=-1 to Y=+1
+        //     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
+        //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
+        //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
+
+        auto theta = acos(-p.y());
+        auto phi = atan2(p.z(), -p.x()) + PI;
+
+        u = phi / (2 * PI);
+        v = theta / PI;
     }
 };

@@ -16,8 +16,8 @@ public:
 class lambertian : public material
 {
 public:
-    lambertian(const color &a) : albedo(a) {}
-    lambertian(const shared_ptr<texture> &_texture) : texture(_texture) {}
+    lambertian(const shared_ptr<texture> _tex) : albedo(_tex) {}
+    lambertian(const color &c) : lambertian(make_shared<solid_color>(c)) {}
 
     bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered) const override
     {
@@ -28,31 +28,30 @@ public:
             scatter_direction = hit.normal;
 
         scattered = ray(hit.hit_point, scatter_direction, r_in.time());
-        attenuation = texture ? texture->value(hit.u, hit.v, hit.hit_point) : albedo;
+        attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
         return true;
     }
 
 private:
-    color albedo;
-    shared_ptr<texture> texture;
+    shared_ptr<texture> albedo;
 };
 
 class metal : public material
 {
 public:
-    metal(const color &a, double f) : albedo(a), fuzz(f < 1 ? f : 1) {}
+    metal(const shared_ptr<texture> _tex, double f) : albedo(_tex), fuzz(f < 1 ? f : 1) {}
+    metal(const color &c, double f) : metal(make_shared<solid_color>(c), f) {}
 
     bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered) const override
     {
         vec3 reflected = reflect(normalize(r_in.direction()), hit.normal);
         scattered = ray(hit.hit_point, reflected + fuzz * random_unit_vector(), r_in.time());
-        attenuation = texture ? texture->value(hit.u, hit.v, hit.hit_point) : albedo;
+        attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
         return dot(scattered.direction(), hit.normal) > 0; // Ensure that fuzz_scattered ray comes out
     }
 
 private:
-    color albedo;
-    shared_ptr<texture> texture;
+    shared_ptr<texture> albedo;
     double fuzz;
 };
 

@@ -3,23 +3,26 @@
 #include "rtweekend.h"
 #include "thread"
 
+#include "sphere.h"
+#include "hittable_list.h"
+#include "material.h"
 #include "threading.h"
 
 class camera
 {
 public:
-    double aspect_ratio = 1.0;        // Ratio of image width over height
-    int image_width = 1;              // Rendered image width in pixel count
-    int samplers_per_pixel = 10;      // Amount of samplers for each pixel
-    double ray_gen_probability = 0.6; // Probability of ray generation. (Instead of using max depth, let's try Russian Roulette!)
+    double aspect_ratio = 1.0;          // Ratio of image width over height
+    int image_width = 1;                // Rendered image width in pixel count
+    int samplers_per_pixel = 10;        // Amount of samplers for each pixel
+    double ray_gen_probability = 0.6;   // Probability of ray generation. (Instead of using max depth, let's try Russian Roulette!)
 
     double vfov = 90;                   // Vertical field of view
     point3 lookfrom = point3(0, 0, -1); // Point where camera is looking from
     point3 lookat = point3(0, 0, 0);    // Point where camera is looking at
     vec3 vup = vec3(0, 1, 0);           // Absolute up direction (world space)
 
-    double defocus_angle = 0; // Variation angle of rays through each pixel
-    double focus_dist = 10;   // Distance form camera lookfrom point to perfect focus plane
+    double defocus_angle = 0;           // Variation angle of rays through each pixel
+    double focus_dist = 10;             // Distance form camera lookfrom point to perfect focus plane
     double frame_duration = 1.0;
 
     // Rendering

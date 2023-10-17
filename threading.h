@@ -7,11 +7,6 @@
 #include <functional>
 #include <chrono>
 
-#include "rtweekend.h"
-#include "sphere.h"
-#include "hittable_list.h"
-#include "material.h"
-
 using namespace std;
 
 class threading // now served as a helper function lib to achieve parallelism, might be reconstructed into thread pool someday
