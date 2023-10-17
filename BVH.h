@@ -46,7 +46,7 @@ public:
 
             auto mid = start + object_span / 2;
             // no need to sort, just cut the vec by half will do the trick
-            // but std::sort() is still faster than our method :(
+            // but std::sort() is still slightly faster than our method :(
             // kth_partition(objects, axis, start, end - 1, mid);
 
             left = make_shared<bvh_node>(objects, start, mid);

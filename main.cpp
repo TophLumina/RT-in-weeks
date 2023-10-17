@@ -6,12 +6,10 @@
 
 #include "BVH.h"
 
-int main()
+void random_spheres(hittable_list &world)
 {
-    hittable_list world;
-
-    auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
-    world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
+    auto checker = make_shared<checker_texture>(0.32, color(0.1, 0.1, 0.4), color(0.9, 0.9, 0.9));
+    world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(checker)));
 
     for (int i = -11; i < 11; ++i)
     {
@@ -61,12 +59,18 @@ int main()
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
     world = hittable_list(make_shared<bvh_node>(world));
+}
+
+int main()
+{
+    hittable_list world;
+    random_spheres(world);
 
     camera cam;
 
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1200;
-    cam.samplers_per_pixel = 8;
+    cam.samplers_per_pixel = 512;
     cam.ray_gen_probability = 0.92;
 
     cam.vfov = 20;

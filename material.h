@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rtweekend.h"
+#include "texture.h"
 
 class hit_info;
 
@@ -16,6 +17,7 @@ class lambertian : public material
 {
 public:
     lambertian(const color &a) : albedo(a) {}
+    lambertian(const shared_ptr<texture> &_texture) : texture(_texture) {}
 
     bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered) const override
     {
@@ -26,12 +28,13 @@ public:
             scatter_direction = hit.normal;
 
         scattered = ray(hit.hit_point, scatter_direction, r_in.time());
-        attenuation = albedo;
+        attenuation = texture ? texture->value(hit.u, hit.v, hit.hit_point) : albedo;
         return true;
     }
 
 private:
     color albedo;
+    shared_ptr<texture> texture;
 };
 
 class metal : public material
@@ -43,12 +46,13 @@ public:
     {
         vec3 reflected = reflect(normalize(r_in.direction()), hit.normal);
         scattered = ray(hit.hit_point, reflected + fuzz * random_unit_vector(), r_in.time());
-        attenuation = albedo;
+        attenuation = texture ? texture->value(hit.u, hit.v, hit.hit_point) : albedo;
         return dot(scattered.direction(), hit.normal) > 0; // Ensure that fuzz_scattered ray comes out
     }
 
 private:
     color albedo;
+    shared_ptr<texture> texture;
     double fuzz;
 };
 
