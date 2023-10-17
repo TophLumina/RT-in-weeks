@@ -9,7 +9,7 @@
 void random_spheres(hittable_list &world);
 void two_spheres(hittable_list &world);
 
-int main()
+int main(int argc, char const *argv[])
 {
     hittable_list world;
     random_spheres(world);
@@ -18,7 +18,7 @@ int main()
 
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1200;
-    cam.samplers_per_pixel = 8;
+    cam.samplers_per_pixel = argc > 1 ? atoi(argv[argc - 1]) : 8; // samplers
     cam.ray_gen_probability = 0.92;
 
     cam.vfov = 20;
@@ -95,5 +95,5 @@ void two_spheres(hittable_list &world)
     auto checker = make_shared<checker_texture>(0.32, color(0.1, 0.1, 0.4), color(0.9, 0.9, 0.9));
 
     world.add(make_shared<sphere>(point3(0, -10, 0), 10, make_shared<lambertian>(checker)));
-    world.add(make_shared<sphere>(point3(0,  10, 0), 10, make_shared<lambertian>(checker)));
+    world.add(make_shared<sphere>(point3(0, 10, 0), 10, make_shared<lambertian>(checker)));
 }
