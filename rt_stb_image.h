@@ -2,7 +2,7 @@
 
 // Disable strict warnings for this header from the Microsoft Visual C++ compiler.
 #ifdef _MSC_VER
-#pragma warning(push, 0)
+    #pragma warning(push, 0)
 #endif
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -74,9 +74,9 @@ private:
     {
         if (x < low)
             return low;
-        if (x < high)
-            return high;
-        return high - 1;
+        if (x >= high)
+            return high - 1;
+        return x;
     }
 };
 
