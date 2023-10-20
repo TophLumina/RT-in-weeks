@@ -28,9 +28,9 @@ int main(int argc, char const *argv[])
     cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
 
-    cam.defocus_angle = 0.6;
-    cam.focus_dist = 10.0;
-    cam.frame_duration = 1.0;
+    // cam.defocus_angle = 0.6;
+    // cam.focus_dist = 10.0;
+    // cam.frame_duration = 1.0;
 
     clog << "Samplers: " << cam.samplers_per_pixel << '\n';
 
@@ -110,7 +110,7 @@ void myuvsphere(hittable_list &world)
 
 void two_noise_spheres(hittable_list &world)
 {
-    auto perlin_texture = make_shared<noise_texture>();
+    auto perlin_texture = make_shared<noise_texture>(4);
 
     world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(perlin_texture)));
     world.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(perlin_texture)));

@@ -26,11 +26,26 @@ public:
 
     double noise(const point3 &p) const
     {
-        auto i = static_cast<int>(4 * p.x()) & 255;
-        auto j = static_cast<int>(4 * p.y()) & 255;
-        auto k = static_cast<int>(4 * p.z()) & 255;
+        auto frac_i = p.x() - floor(p.x());
+        auto frac_j = p.y() - floor(p.y());
+        auto frac_k = p.z() - floor(p.z());
 
-        return ranfloat[perm_x[i] ^ perm_y[j] ^ perm_z[k]];
+        // Hermitian Smoothing
+        frac_i = frac_i * frac_i * (3 - 2 * frac_i);
+        frac_j = frac_j * frac_j * (3 - 2 * frac_j);
+        frac_k = frac_k * frac_k * (3 - 2 * frac_k);
+
+        auto i = static_cast<int>(floor(p.x()));
+        auto j = static_cast<int>(floor(p.y()));
+        auto k = static_cast<int>(floor(p.z()));
+        double c[2][2][2];
+
+        for (int di = 0; di < 2; ++di)
+            for (int dj = 0; dj < 2; ++dj)
+                for (int dk = 0; dk < 2; ++dk)
+                    c[di][dj][dk] = ranfloat[perm_x[(di + i) & 255] ^ perm_y[(dj + j) & 255] ^ perm_z[(dk + k) & 255]];
+
+        return trilinear_interp(c, frac_i, frac_j, frac_k);
     }
 
 private:
@@ -60,5 +75,16 @@ private:
             p[i] = p[target];
             p[target] = tmp;
         }
+    }
+
+    static double trilinear_interp(double c[2][2][2], double u, double v, double w)
+    {
+        double accum = 0;
+        for (int i = 0; i < 2; ++i)
+            for (int j = 0; j < 2; ++j)
+                for (int k = 0; k < 2; ++k)
+                    accum += (i * u + (1 - i) * (1 - u)) * (j * v + (1 - j) * (1 - v)) * (k * w + (1 - k) * (1 - w)) * c[i][j][k];
+
+        return accum;
     }
 };
