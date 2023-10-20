@@ -47,27 +47,16 @@ private:
     shared_ptr<texture> odd;
 };
 
-enum Texture_Parameter
-{
-    Clamp_to_Edge, Repeat
-};
-
 class image_texture : public texture
 {
 public:
-    image_texture(const char* filename, Texture_Parameter _tex_parm = Clamp_to_Edge) : image(filename), tex_parameter(_tex_parm) {}
+    image_texture(const char* filename) : image(filename) {}
 
     color value(double u, double v, const point3& p) const override
     {
         // If no texture data, output a debug color
         if (image.height() <= 0)
             return color(1, 0, 1);
-
-        if (tex_parameter == Repeat)
-        {
-            // u = frac(u)
-            // v = frac(v)
-        }
 
         u = interval(0, 1).clamp(u);
         v = 1.0 - interval(0, 1).clamp(v); // Flip V in tex coord
@@ -76,11 +65,10 @@ public:
         auto y = static_cast<int>(v * image.height());
         auto pixel = image.pixel_data(x, y);
 
-        auto color_scale = 1.0 / 255;
+        auto color_scale = 1.0 / 255.0;
         return color_scale * color(pixel[0], pixel[1], pixel[2]);
     }
 
 private:
-    Texture_Parameter tex_parameter;
     rtw_image image;
 };

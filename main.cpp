@@ -8,11 +8,12 @@
 
 void random_spheres(hittable_list &world);
 void two_spheres(hittable_list &world);
+void earth(hittable_list &world);
 
 int main(int argc, char const *argv[])
 {
     hittable_list world;
-    random_spheres(world);
+    earth(world);
 
     camera cam;
 
@@ -96,4 +97,12 @@ void two_spheres(hittable_list &world)
 
     world.add(make_shared<sphere>(point3(0, -10, 0), 10, make_shared<lambertian>(checker)));
     world.add(make_shared<sphere>(point3(0, 10, 0), 10, make_shared<lambertian>(checker)));
+}
+
+void earth(hittable_list &world)
+{
+    auto earth_texture = make_shared<image_texture>("earthmap.jpg");
+    auto earth_mat = make_shared<lambertian>(earth_texture);
+
+    world.add(make_shared<sphere>(point3(0, 0, 0), 2, earth_mat));
 }

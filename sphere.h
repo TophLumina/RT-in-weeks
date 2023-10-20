@@ -85,7 +85,7 @@ private:
         //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
 
         auto theta = acos(-p.y());
-        auto phi = atan2(p.z(), -p.x()) + PI;
+        auto phi = atan2(-p.z(), p.x()) + PI;
 
         u = phi / (2 * PI);
         v = theta / PI;
