@@ -9,11 +9,12 @@
 void random_spheres(hittable_list &world);
 void two_spheres(hittable_list &world);
 void myuvsphere(hittable_list &world);
+void two_noise_spheres(hittable_list &world);
 
 int main(int argc, char const *argv[])
 {
     hittable_list world;
-    myuvsphere(world);
+    two_noise_spheres(world);
 
     camera cam;
 
@@ -23,7 +24,7 @@ int main(int argc, char const *argv[])
     cam.ray_gen_probability = 0.92;
 
     cam.vfov = 20;
-    cam.lookfrom = point3(0, 0, 12);
+    cam.lookfrom = point3(13, 2, 3);
     cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
 
@@ -105,4 +106,12 @@ void myuvsphere(hittable_list &world)
     auto earth_mat = make_shared<lambertian>(earth_texture);
 
     world.add(make_shared<sphere>(point3(0, 0, 0), 2, earth_mat));
+}
+
+void two_noise_spheres(hittable_list &world)
+{
+    auto perlin_texture = make_shared<noise_texture>();
+
+    world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(perlin_texture)));
+    world.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(perlin_texture)));
 }
