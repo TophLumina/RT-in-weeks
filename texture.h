@@ -51,9 +51,9 @@ private:
 class image_texture : public texture
 {
 public:
-    image_texture(const char* filename) : image(filename) {}
+    image_texture(const char *filename) : image(filename) {}
 
-    color value(double u, double v, const point3& p) const override
+    color value(double u, double v, const point3 &p) const override
     {
         // If no texture data, output a debug color
         if (image.height() <= 0)
@@ -81,9 +81,11 @@ class noise_texture : public texture
 public:
     noise_texture(double _scale) : scale(_scale) {}
 
-    color value(double u, double v, const point3& p) const override
+    color value(double u, double v, const point3 &p) const override
     {
-        return color(1, 1, 1) * 0.5 * (noise.noise(scale * p) + 1.0); // to avoid getting negative values and passing them to sqrt() in gamma correction func
+        // To avoid getting negative values and passing them to sqrt() in gamma correction func
+        // Now remapping to [0, 1]
+        return color(1, 1, 1) * 0.5 * (noise.noise(scale * p) + 1.0);
     }
 
 private:
