@@ -52,7 +52,7 @@ public:
             left = make_shared<bvh_node>(objects, start, mid);
             right = make_shared<bvh_node>(objects, mid, end);
         }
-
+        
         bbox = aabb(left->bounding_box(), right->bounding_box());
     }
 
@@ -61,7 +61,7 @@ public:
         if (!bbox.hit(r, ray_t))
             return false;
 
-        // when loop into leaf node, right/left should be sphere
+        // when loop into leaf node, right/left should be primitive
         bool hit_l = left->hit(r, ray_t, hit);
         bool hit_r = right->hit(r, interval(ray_t.min, /*if left hit, then check any hit before left hit*/ hit_l ? hit.t : ray_t.max), hit);
 

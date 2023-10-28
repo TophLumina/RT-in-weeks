@@ -26,7 +26,7 @@ public:
     double focus_dist = 10;             // Distance form camera lookfrom point to perfect focus plane
     double frame_duration = 1.0;        // Shutter opening time
 
-    color background = color(0, 0, 0);  // Scene background color
+    color background = color(0, 0, 0);  // Scene background color (more like env light actually, could add HDRI or cube_map support someday)
 
     // Rendering
     void render(const hittable_list /* don't get it, but it works, and it won't work with 'const hittable' here*/ &world)

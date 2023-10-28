@@ -3,6 +3,7 @@
 #include "rtweekend.h"
 
 #include "hittable.h"
+#include "hittable_list.h"
 
 class quad : public hittable
 {
@@ -56,7 +57,7 @@ public:
         vec3 p_vec = p - Q;
         auto alpha = dot(w, cross(p_vec, v));
         auto beta = dot(w, cross(u, p_vec));
-        
+
         if (!is_interior(alpha, beta, hit))
             return false;
 
@@ -78,3 +79,26 @@ private:
     double D;
     vec3 w; // Cached value use for solving UV
 };
+
+// Return a 3D cube that contains the two opposite vertices a & b
+inline shared_ptr<hittable_list> cube(const point3 &a, const point3 &b, shared_ptr<material> mat)
+{
+    auto faces = make_shared<hittable_list>();
+
+    // Construct the two opposite vertices
+    auto min = point3(fmin(a.x(), b.x()), fmin(a.y(), b.y()), fmin(a.z(), b.z()));
+    auto max = point3(fmax(a.x(), b.x()), fmax(a.y(), b.y()), fmax(a.z(), b.z()));
+
+    auto dx = vec3(max.x() - min.x(), 0, 0);
+    auto dy = vec3(0, max.y() - min.y(), 0);
+    auto dz = vec3(0, 0, max.z() - min.z());
+
+    faces->add(make_shared<quad>(point3(min.x(), min.y(), max.z()), dx, dy, mat));  // front
+    faces->add(make_shared<quad>(point3(max.x(), min.y(), max.z()), -dz, dy, mat)); // right
+    faces->add(make_shared<quad>(point3(max.x(), min.y(), min.z()), -dx, dy, mat)); // back
+    faces->add(make_shared<quad>(point3(min.x(), min.y(), min.z()), dz, dy, mat));  // left
+    faces->add(make_shared<quad>(point3(min.x(), max.y(), max.z()), dx, -dz, mat)); // top
+    faces->add(make_shared<quad>(point3(min.x(), min.y(), min.z()), dx, dz, mat));  // bottom
+
+    return faces;
+}

@@ -29,10 +29,10 @@ public:
     aabb pad()
     {
         // if any side narrower than delta, get padding
-        double delta = 0.0001;
+        double delta = 1e-4;
         interval _x = (x.size() >= delta) ? x : x.expand(delta);
-        interval _y = (x.size() >= delta) ? y : y.expand(delta);
-        interval _z = (x.size() >= delta) ? z : z.expand(delta);
+        interval _y = (y.size() >= delta) ? y : y.expand(delta);
+        interval _z = (z.size() >= delta) ? z : z.expand(delta);
 
         return aabb(_x, _y, _z);
     }
