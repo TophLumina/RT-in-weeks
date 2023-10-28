@@ -28,6 +28,7 @@ int main(int argc, char const *argv[])
     cam.lookfrom = point3(0, 0, 9);
     cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
+    cam.background = color(0.7, 0.8, 1.0);
 
     // cam.defocus_angle = 0.6;
     // cam.focus_dist = 10.0;

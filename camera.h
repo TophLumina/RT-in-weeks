@@ -24,7 +24,9 @@ public:
 
     double defocus_angle = 0;           // Variation angle of rays through each pixel
     double focus_dist = 10;             // Distance form camera lookfrom point to perfect focus plane
-    double frame_duration = 1.0;
+    double frame_duration = 1.0;        // Shutter opening time
+
+    color background = color(0, 0, 0);  // Scene background color
 
     // Rendering
     void render(const hittable_list /* don't get it, but it works, and it won't work with 'const hittable' here*/ &world)
@@ -175,16 +177,21 @@ private:
             {
                 ray scattered;
                 color attenuation;
+                color emission_color = hit.mat->emitter(hit.u, hit.v, hit.hit_point);
 
-                if (hit.mat->scatter(r, hit, attenuation, scattered))
-                    return attenuation * ray_color(scattered, world, ray_gen_probability);
+                if (!hit.mat->scatter(r,hit,attenuation,scattered))
+                    return emission_color;
+
+                color scatter_color = attenuation * ray_color(scattered, world, ray_gen_probability);
+                return emission_color + scatter_color;
             }
             return color();
         }
-
-        vec3 unit_direction = normalize(r.direction());
-        auto a = 0.5 * (unit_direction.y() + 1.0);
-        return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0); // Serve as Sky Color ()
+        // If ray hits nothing, simply return background color
+        else
+        {
+            return background;
+        }
     }
 
     // Funcs for MultiThreading (each thread handle a line)
