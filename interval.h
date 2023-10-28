@@ -43,3 +43,13 @@ public:
 
 const static interval empty(+infinity, -infinity);
 const static interval universe(-infinity, +infinity);
+
+inline interval operator+(const interval &ival, double offset)
+{
+    return interval(ival.min + offset, ival.max + offset);
+}
+
+inline interval operator+(double offset, const interval &ival)
+{
+    return ival + offset;
+}

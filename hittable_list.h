@@ -31,6 +31,16 @@ public:
         bbox = aabb(bbox, object->bounding_box());
     }
 
+    // Avoid nested hittable_list in objects, otherwise it will lead to an incomplete build of BVH Tree
+    // Why there is no difference on test run? heavily nested structure should have caused serious performance issues...
+    void add(shared_ptr<hittable_list> object_list)
+    {
+        for (auto i : object_list->objects)
+            objects.push_back(i);
+        
+        bbox = aabb(bbox, object_list->bounding_box());
+    }
+
     bool hit(const ray &r, interval ray_t, hit_info &hit) const override
     {
         hit_info tmp;

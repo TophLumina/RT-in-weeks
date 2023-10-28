@@ -7,11 +7,11 @@ class aabb
 public:
     interval x, y, z;
 
-    aabb(){} // empty intervals
+    aabb() {} // empty intervals
 
-    aabb(const interval& ix, const interval& iy, const interval& iz) : x(ix), y(iy), z(iz) {}
+    aabb(const interval &ix, const interval &iy, const interval &iz) : x(ix), y(iy), z(iz) {}
 
-    aabb(const point3& a, const point3& b)
+    aabb(const point3 &a, const point3 &b)
     // two points serve as extrema for the bounding box
     {
         x = interval(fmin(a.e[0], b.e[0]), fmax(a.e[0], b.e[0]));
@@ -19,7 +19,7 @@ public:
         z = interval(fmin(a.e[2], b.e[2]), fmax(a.e[2], b.e[2]));
     }
 
-    aabb(const aabb& a, const aabb& b)
+    aabb(const aabb &a, const aabb &b)
     {
         x = interval(a.x, b.x);
         y = interval(a.y, b.y);
@@ -37,7 +37,7 @@ public:
         return aabb(_x, _y, _z);
     }
 
-    const interval& axis(int i) const
+    const interval &axis(int i) const
     {
         if (i == 1)
             return y;
@@ -46,7 +46,7 @@ public:
         return x;
     }
 
-    bool hit(const ray& r, interval ray_t) const
+    bool hit(const ray &r, interval ray_t) const
     // Andrew Kensler's optimized method
     {
         for (int a = 0; a < 3; ++a)
@@ -59,15 +59,25 @@ public:
 
             if (invD < 0)
                 std::swap(t0, t1);
-            
+
             if (t0 > ray_t.min)
                 ray_t.min = t0;
             if (t1 < ray_t.max)
                 ray_t.max = t1;
-            
+
             if (ray_t.max <= ray_t.min)
                 return false;
         }
         return true;
     }
 };
+
+inline aabb operator+(const aabb &bbox, const vec3 &offset)
+{
+    return aabb(bbox.x + offset.x(), bbox.y + offset.y(), bbox.z + offset.z());
+}
+
+inline aabb operator+(const vec3 &offset, const aabb &bbox)
+{
+    return bbox + offset;
+}

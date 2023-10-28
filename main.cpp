@@ -154,6 +154,9 @@ void cornell_box(hittable_list &world)
     world.add(make_shared<quad>(point3(555, 555, 555), vec3(-555, 0, 0), vec3(0, 0, -555), white));
     world.add(make_shared<quad>(point3(0, 0, 555), vec3(555, 0, 0), vec3(0, 555, 0), white));
 
-    world.add(cube(point3(130, 0, 65), point3(295, 165, 230), white));
-    world.add(cube(point3(265, 0, 295), point3(430, 330, 460), white));
+    shared_ptr<hittable> box1 = cube(point3(0,0,0), point3(165,330,165), white);
+    world.add(make_shared<translate>(box1, vec3(265, 0, 295)));
+
+    shared_ptr<hittable> box2 = cube(point3(0,0,0), point3(165,165,165), white);
+    world.add(make_shared<translate>(box2, vec3(130, 0, 65)));
 }
