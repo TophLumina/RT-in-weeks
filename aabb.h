@@ -26,6 +26,17 @@ public:
         z = interval(a.z, b.z);
     }
 
+    aabb pad()
+    {
+        // if any side narrower than delta, get padding
+        double delta = 0.0001;
+        interval _x = (x.size() >= delta) ? x : x.expand(delta);
+        interval _y = (x.size() >= delta) ? y : y.expand(delta);
+        interval _z = (x.size() >= delta) ? z : z.expand(delta);
+
+        return aabb(_x, _y, _z);
+    }
+
     const interval& axis(int i) const
     {
         if (i == 1)

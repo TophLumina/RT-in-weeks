@@ -10,21 +10,22 @@ void random_spheres(hittable_list &world);
 void two_spheres(hittable_list &world);
 void myuvsphere(hittable_list &world);
 void two_noise_spheres(hittable_list &world);
+void quads(hittable_list &world);
 
 int main(int argc, char const *argv[])
 {
     hittable_list world;
-    two_noise_spheres(world);
+    quads(world);
 
     camera cam;
 
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 1200;
+    cam.image_width = 800;
     cam.samplers_per_pixel = argc > 1 ? atoi(argv[argc - 1]) : 8; // samplers
     cam.ray_gen_probability = 0.92;
 
-    cam.vfov = 20;
-    cam.lookfrom = point3(13, 2, 3);
+    cam.vfov = 80;
+    cam.lookfrom = point3(0, 0, 9);
     cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
 
@@ -114,4 +115,21 @@ void two_noise_spheres(hittable_list &world)
 
     world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(perlin_texture)));
     world.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(perlin_texture)));
+}
+
+void quads(hittable_list &world)
+{
+    // Materials
+    auto left_red =     make_shared<lambertian>(color(1.0, 0.2, 0.2));
+    auto back_green =   make_shared<lambertian>(color(0.2, 1.0, 0.2));
+    auto right_blue =   make_shared<lambertian>(color(0.2, 0.2, 1.0));
+    auto upper_orange = make_shared<lambertian>(color(1.0, 0.5, 0.0));
+    auto lower_teal =   make_shared<lambertian>(color(0.2, 0.8, 0.8));
+
+    // Quads
+    world.add(make_shared<quad>(point3(-3, -2, 5), vec3(0, 0, -4), vec3(0, 4, 0), left_red));
+    world.add(make_shared<quad>(point3(-2, -2, 0), vec3(4, 0, 0), vec3(0, 4, 0), back_green));
+    world.add(make_shared<quad>(point3(3, -2, 1), vec3(0, 0, 4), vec3(0, 4, 0), right_blue));
+    world.add(make_shared<quad>(point3(-2, 3, 1), vec3(4, 0, 0), vec3(0, 0, 4), upper_orange));
+    world.add(make_shared<quad>(point3(-2, -3, 5), vec3(4, 0, 0), vec3(0, 0, -4), lower_teal));
 }
