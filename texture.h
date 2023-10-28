@@ -83,9 +83,9 @@ public:
 
     color value(double u, double v, const point3 &p) const override
     {
-        // To avoid getting negative values and passing them to sqrt() in gamma correction func
-        // Now remapping to [0, 1]
-        return color(1, 1, 1) * 0.5 * (noise.noise(scale * p) + 1.0);
+        auto s = scale * p;
+        // turbulence in other math functions to make repeatable noise pattern
+        return color(1, 1, 1) * 0.5 * (1 + sin(s.z() + 10 * noise.turb(s)));
     }
 
 private:

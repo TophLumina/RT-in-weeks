@@ -43,6 +43,22 @@ public:
         return trilinear_interp(c, frac_i, frac_j, frac_k);
     }
 
+    double turb(const point3 &p, int depth = 7) const
+    {
+        auto accm = 0.0;
+        auto tmp = p;
+        auto weight = 1.0;
+
+        for (int i = 0; i < depth; ++i)
+        {
+            accm += weight * noise(tmp);
+            weight *= 0.5;
+            tmp *= 2;
+        }
+
+        return fabs(accm); // perlin.noise(p) could return negative value
+    }
+
 private:
     static const int point_count = 256;
     vec3 *ranvec;
