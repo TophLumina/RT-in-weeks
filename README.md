@@ -18,3 +18,5 @@ Here comes some images rendered from the little Ray Tracer :)
 ![Many Spheres](./img/readme/readme0.png "Rendering Result 01")
 
 ![Noise Sphere with Lighting](./img/readme/readme1.png "Rendering Result 02")
+
+![Cornell Box](./img/readme/readme2.png "Rendering Result 03")
