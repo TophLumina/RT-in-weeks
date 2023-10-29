@@ -26,7 +26,7 @@ int main(int argc, char const *argv[])
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1200;
     cam.samplers_per_pixel = argc > 1 ? atoi(argv[argc - 1]) : 8; // samplers
-    cam.ray_gen_probability = 0.92;
+    cam.ray_gen_probability = 0.96;
 
     cam.vfov = 40;
     cam.lookfrom = point3(278, 278, -800);
