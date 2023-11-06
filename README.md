@@ -15,8 +15,10 @@ and you should find the executable in *./build*.
 
 Here comes some images rendered from the little Ray Tracer :)
 
-![Many Spheres](./img/readme/readme0.png "Rendering Result 01")
+![Many Spheres](./img/readme/readme0.png "Many Spheres, 512 Samplers")
 
-![Noise Sphere with Lighting](./img/readme/readme1.png "Rendering Result 02")
+![Noise Sphere with Lighting](./img/readme/readme1.png "Noise Sphere with Lighting, 512 Samplers")
 
-![Cornell Box](./img/readme/readme2.png "Rendering Result 03")
+![Cornell Box](./img/readme/readme2.png "Cornell Box, 512 Samplers")
+
+![Cornell Box Smoke](./img/readme/readme3.png "Cornell Box Smoke, 512 Samplers")

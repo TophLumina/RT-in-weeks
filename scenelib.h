@@ -16,6 +16,7 @@ void two_noise_spheres_with_lighting(hittable_list &world);
 void quads(hittable_list &world);
 void cornell_box(hittable_list &world);
 void smoke_cornell(hittable_list &world);
+void final_scene(hittable_list &world);
 
 auto SceneFunc = smoke_cornell;
 
@@ -166,4 +167,9 @@ void smoke_cornell(hittable_list &world)
 
     world.add(make_shared<constant_medium>(box1, 0.01, color(0, 0, 0)));
     world.add(make_shared<constant_medium>(box2, 0.01, color(1, 1, 1)));
+}
+
+void final_scene(hittable_list &world)
+{
+
 }
