@@ -12,7 +12,7 @@ class camera
 public:
     double aspect_ratio = 1.0;          // Ratio of image width over height
     int image_width = 1;                // Rendered image width in pixel count
-    int samplers_per_pixel = 10;        // Amount of samplers for each pixel
+    int samplers_per_pixel = 16;        // Amount of samplers for each pixel
     double ray_gen_probability = 0.6;   // Probability of ray generation. (Instead of using max depth, let's try Russian Roulette!)
 
     double vfov = 90;                   // Vertical field of view
