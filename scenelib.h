@@ -18,7 +18,7 @@ void cornell_box(hittable_list &world);
 void smoke_cornell(hittable_list &world);
 void final_scene(hittable_list &world);
 
-auto SceneFunc = smoke_cornell;
+auto SceneFunc = quads;
 
 void random_spheres(hittable_list &world)
 {
@@ -171,5 +171,13 @@ void smoke_cornell(hittable_list &world)
 
 void final_scene(hittable_list &world)
 {
+    hittable_list boxes;
+    auto ground = make_shared<lambertian>(color(0.48, 0.83, 0.53));
 
+    int box_per_side = 20;
+    for (int i = 0; i < box_per_side; ++i)
+        for (int j = 0; j < box_per_side; ++j)
+        {
+
+        }
 }

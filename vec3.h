@@ -64,8 +64,8 @@ class vec3 {
         // Return true if vec3 is around (0, 0, 0)
         bool near_zero() const
         {
-            auto s = 1e-8;
-            return fabs(e[0]) < s && fabs(e[1]) < s && fabs(e[2]) < s;
+            auto s = 1e-16;
+            return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
         }
 
         static vec3 random()

@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
     SceneFunc(world);
 
     // Building acceleration structure(BVH Tree)
-    world = hittable_list(make_shared<bvh_node>(world));
+    // world = hittable_list(make_shared<bvh_node>(world));
 
     camera cam;
 
@@ -31,7 +31,7 @@ int main(int argc, char const *argv[])
     // cam.defocus_angle = 0.6;
     // cam.focus_dist = 10.0;
     // cam.frame_duration = 1.0;
-
+    cam.background = color(1, 1, 1);
     clog << "Samplers: " << cam.samplers_per_pixel << '\n';
 
     cam.render(world);
