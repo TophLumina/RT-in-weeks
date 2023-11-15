@@ -14,24 +14,23 @@ int main(int argc, char const *argv[])
     SceneFunc(world);
 
     // Building acceleration structure(BVH Tree)
-    // world = hittable_list(make_shared<bvh_node>(world));
+    world = hittable_list(make_shared<bvh_node>(world));
 
     camera cam;
 
-    cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 1200;
+    cam.aspect_ratio = 1.0;
+    cam.image_width = 800;
     cam.samplers_per_pixel = argc > 1 ? atoi(argv[argc - 1]) : 8; // samplers
     cam.ray_gen_probability = 0.96;
 
     cam.vfov = 40;
-    cam.lookfrom = point3(278, 278, -800);
+    cam.lookfrom = point3(478, 278, -600);
     cam.lookat = point3(278, 278, 0);
     cam.vup = vec3(0, 1, 0);
 
     // cam.defocus_angle = 0.6;
     // cam.focus_dist = 10.0;
     // cam.frame_duration = 1.0;
-    cam.background = color(1, 1, 1);
     clog << "Samplers: " << cam.samplers_per_pixel << '\n';
 
     cam.render(world);

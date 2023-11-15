@@ -31,3 +31,5 @@ Here comes some images rendered from the little Ray Tracer :)
 ![Cornell Box](./img/readme/readme2.png "Cornell Box, 512 Samplers")
 
 ![Cornell Box Smoke](./img/readme/readme3.png "Cornell Box Smoke, 512 Samplers")
+
+![Image with all Features](./img/readme/readme4.png "all Features, 10240 Samplers")
