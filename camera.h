@@ -95,6 +95,8 @@ private:
     vec3 u, v, w;        // Camera frame basis vectors
     vec3 defocus_disk_u; // Defocus disk horizontal radius
     vec3 defocus_disk_v; // Defocus disk vertical radius
+    int sqrt_spp;        // Subpixel var for pixel sample stratifying
+    double stride_spp;   // Stride of subpixel stratifying
 
     void initialize()
     {
@@ -130,29 +132,33 @@ private:
         auto defocus_radius = focus_dist * (tan(degree2radius(defocus_angle / 2)));
         defocus_disk_u = u * defocus_radius;
         defocus_disk_v = v * defocus_radius;
+
+        // Subpixel stratifying
+        sqrt_spp = static_cast<int>(sqrt(samplers_per_pixel));
+        stride_spp = 1.0 / sqrt_spp;
     }
 
-    // Return a random offset in the square around pixel
-    vec3 pixel_sample_square()
+    // Return a random offset in the square around pixel, given two sub-pixel indexes
+    vec3 pixel_sample_square(int sub_i, int sub_j) const
     {
-        auto px = -0.5 + random_double();
-        auto py = -0.5 + random_double();
+        auto px = -0.5 + stride_spp * (sub_i + random_double());
+        auto py = -0.5 + stride_spp * (sub_j + random_double());
 
         return (px * pixel_delta_u) + (py * pixel_delta_v);
     }
 
     // Return a random point in the camera defocus disk
-    point3 defocus_disk_sample()
+    point3 defocus_disk_sample() const
     {
         auto p = random_in_unit_disk();
         return center + p[0] * defocus_disk_u + p[1] * defocus_disk_v;
     }
 
-    // Return a randomly sampled ray for pixel i, j, originating from the camera defocus disk
-    ray get_primary_ray(int i, int j)
+    // Return a randomly sampled ray for pixel i, j and given subpixel indexes, originating from the camera defocus disk
+    ray get_primary_ray(int i, int j, int sub_i, int sub_j) const
     {
         auto pixel_center = pixel00_pos + (j * pixel_delta_u) + (i * pixel_delta_v);
-        auto pixel_sample = pixel_center + pixel_sample_square();
+        auto pixel_sample = pixel_center + pixel_sample_square(sub_i, sub_j);
 
         auto ray_origin = defocus_angle <= 0 ? center : defocus_disk_sample();
 
@@ -163,7 +169,7 @@ private:
         return ray(ray_origin, ray_direction, ray_time);
     }
 
-    color ray_color(const ray &r, const hittable &world, double ray_gen_probability)
+    color ray_color(const ray &r, const hittable &world, double ray_gen_probability) const
     {
         hit_info hit;
 
@@ -198,14 +204,18 @@ private:
         for (int i = 0; i < image_width; ++i)
         {
             color pixel_color(0, 0, 0);
-            for (int sample = 0; sample < samplers_per_pixel; ++sample)
+
+            for (int s_i = 0; s_i < sqrt_spp; ++s_i)
             {
-                ray r = get_primary_ray(index_row, i);
-                pixel_color += ray_color(r, world, ray_gen_probability);
+                for (int s_j = 0; s_j < sqrt_spp; ++s_j)
+                {
+                    ray r = get_primary_ray(index_row, i, s_i, s_j);
+                    pixel_color += ray_color(r, world, ray_gen_probability);
+                }
             }
 
-            // Write all color into buffer
-            buffer[index_row][i] = pixel_color;
+                // Write all color into buffer
+                buffer[index_row][i] = pixel_color;
         }
 
         ++threading::thread_finished;

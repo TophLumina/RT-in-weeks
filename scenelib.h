@@ -18,7 +18,7 @@ void cornell_box(hittable_list &world);
 void smoke_cornell(hittable_list &world);
 void all_features(hittable_list &world);
 
-auto SceneFunc = all_features;
+auto SceneFunc = cornell_box;
 
 void random_spheres(hittable_list &world)
 {
