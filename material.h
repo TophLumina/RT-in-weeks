@@ -16,6 +16,8 @@ public:
     }
 
     virtual bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered) const = 0;
+
+    virtual double scattering_pdf(const ray &r_in, const hit_info &hit, const ray &scatted) const { return 0; }
 };
 
 class lambertian : public material
@@ -35,6 +37,12 @@ public:
         scattered = ray(hit.hit_point, scatter_direction, r_in.time());
         attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
         return true;
+    }
+
+    double scattering_pdf(const ray &r_in, const hit_info &hit, const ray &scatted) const override
+    {
+        auto cos_theta = dot(hit.normal, normalize(scatted.direction()));
+        return cos_theta < 0 ? 0 : cos_theta / PI;
     }
 
 private:

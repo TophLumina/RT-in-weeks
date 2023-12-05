@@ -10,24 +10,24 @@
 class camera
 {
 public:
-    double aspect_ratio = 1.0;          // Ratio of image width over height
-    int image_width = 1;                // Rendered image width in pixel count
-    int samplers_per_pixel = 16;        // Amount of samplers for each pixel
-    double ray_gen_probability = 0.6;   // Probability of ray generation. (Instead of using max depth, let's try Russian Roulette!)
+    double aspect_ratio = 1.0;        // Ratio of image width over height
+    int image_width = 1;              // Rendered image width in pixel count
+    int samplers_per_pixel = 16;      // Amount of samplers for each pixel
+    double ray_gen_probability = 0.6; // Probability of ray generation. (Instead of using max depth, let's try Russian Roulette!)
 
     double vfov = 90;                   // Vertical field of view
     point3 lookfrom = point3(0, 0, -1); // Point where camera is looking from
     point3 lookat = point3(0, 0, 0);    // Point where camera is looking at
     vec3 vup = vec3(0, 1, 0);           // Absolute up direction (world space)
 
-    double defocus_angle = 0;           // Variation angle of rays through each pixel
-    double focus_dist = 10;             // Distance form camera lookfrom point to perfect focus plane
-    double frame_duration = 1.0;        // Shutter opening time
+    double defocus_angle = 0;    // Variation angle of rays through each pixel
+    double focus_dist = 10;      // Distance form camera lookfrom point to perfect focus plane
+    double frame_duration = 1.0; // Shutter opening time
 
-    color background = color(0, 0, 0);  // Scene background color (more like env light actually, could add HDRI or cube_map support someday)
+    color background = color(0, 0, 0); // Scene background color (more like env light actually, could add HDRI or cube_map support someday)
 
     // Rendering
-    void render(const hittable_list /* don't get it, but it works, and it won't work with 'const hittable' here*/ &world)
+    void render(const hittable_list /* don't get it, but it works, and it won't work with 'hittable' here*/ &world)
     {
         initialize();
 
@@ -183,10 +183,14 @@ private:
                 color attenuation;
                 color emission_color = hit.mat->emitter(hit.u, hit.v, hit.hit_point);
 
-                if (!hit.mat->scatter(r,hit,attenuation,scattered))
+                if (!hit.mat->scatter(r, hit, attenuation, scattered))
                     return emission_color;
 
-                color scatter_color = attenuation * ray_color(scattered, world, ray_gen_probability);
+                double scattering_pdf = hit.mat->scattering_pdf(r, hit, scattered);
+                // double pdf = scattering_pdf;
+                double pdf = 1 / (2 * PI);
+
+                color scatter_color = (attenuation * scattering_pdf * ray_color(scattered, world, ray_gen_probability)) / pdf;
                 return emission_color + scatter_color;
             }
             return color();
@@ -214,8 +218,8 @@ private:
                 }
             }
 
-                // Write all color into buffer
-                buffer[index_row][i] = pixel_color;
+            // Write all color into buffer
+            buffer[index_row][i] = pixel_color;
         }
 
         ++threading::thread_finished;
