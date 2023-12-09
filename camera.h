@@ -181,14 +181,13 @@ private:
             {
                 ray scattered;
                 color attenuation;
+                double pdf;
                 color emission_color = hit.mat->emitter(hit.u, hit.v, hit.hit_point);
 
-                if (!hit.mat->scatter(r, hit, attenuation, scattered))
+                if (!hit.mat->scatter(r, hit, attenuation, scattered, pdf))
                     return emission_color;
 
                 double scattering_pdf = hit.mat->scattering_pdf(r, hit, scattered);
-                // double pdf = scattering_pdf;
-                double pdf = 1 / (2 * PI);
 
                 color scatter_color = (attenuation * scattering_pdf * ray_color(scattered, world, ray_gen_probability)) / pdf;
                 return emission_color + scatter_color;

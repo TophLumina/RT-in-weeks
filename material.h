@@ -2,6 +2,7 @@
 
 #include "rtweekend.h"
 #include "texture.h"
+#include "ONB.h"
 
 class hit_info;
 
@@ -15,7 +16,7 @@ public:
         return color(0, 0, 0);
     }
 
-    virtual bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered) const = 0;
+    virtual bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const = 0;
 
     virtual double scattering_pdf(const ray &r_in, const hit_info &hit, const ray &scatted) const { return 0; }
 };
@@ -26,16 +27,15 @@ public:
     lambertian(const shared_ptr<texture> _tex) : albedo(_tex) {}
     lambertian(const color &c) : lambertian(make_shared<solid_color>(c)) {}
 
-    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered) const override
+    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override
     {
-        vec3 scatter_direction = hit.normal + random_unit_vector();
-
-        // When random_vector is in the opposite of normal, it will make scatter_direction zero
-        if (scatter_direction.near_zero())
-            scatter_direction = hit.normal;
+        onb bTan;
+        bTan.build_from_w(hit.normal);
+        vec3 scatter_direction = bTan.local(random_cosine_direction());
 
         scattered = ray(hit.hit_point, scatter_direction, r_in.time());
         attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
+        pdf = dot(bTan.w(), scattered.direction()) / PI;
         return true;
     }
 
@@ -55,7 +55,7 @@ public:
     metal(const shared_ptr<texture> _tex, double f) : albedo(_tex), fuzz(f < 1 ? f : 1) {}
     metal(const color &c, double f) : metal(make_shared<solid_color>(c), f) {}
 
-    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered) const override
+    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override
     {
         vec3 reflected = reflect(normalize(r_in.direction()), hit.normal);
         scattered = ray(hit.hit_point, reflected + fuzz * random_unit_vector(), r_in.time());
@@ -73,7 +73,7 @@ class dielectric : public material
 public:
     dielectric(double index_of_reflection) : ir(index_of_reflection) {}
 
-    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered) const override
+    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override
     {
         attenuation = color(1.0, 1.0, 1.0); // Material like glass or water usually absorb nothing, so there is no effect on the incoming ray
         double refraction_ratio = hit.front_face ? (1.0 / ir) : ir;
@@ -100,8 +100,8 @@ public:
 
 private:
     double ir; // Index of Reflection
-    // Common Material: Water/Glass: 1.3 - 1.7
-    //                  Diamond:     2.4
+    // Common Material:     Water/Glass: 1.3 - 1.7
+    //                      Diamond:     2.4
 
     static double reflectance(double cosine, double reflectance_index)
     {
@@ -118,7 +118,7 @@ public:
     diffuse_light(shared_ptr<texture> e) : emit(e) {}
     diffuse_light(color c) : emit(make_shared<solid_color>(c)) {}
 
-    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered) const override { return false; }
+    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override { return false; }
 
     color emitter(double u, double v, const point3 &p) const override { return emit->value(u, v, p); }
 
@@ -132,12 +132,19 @@ public:
     isotropic(shared_ptr<texture> _tex) : albedo(_tex) {}
     isotropic(color _col) : isotropic(make_shared<solid_color>(_col)) {}
 
-    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered) const override
+    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override
     {
         scattered = ray(hit.hit_point, random_unit_vector(), r_in.time());
         attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
+        pdf = 1.0 / (4.0 * PI);
 
         return true;
+    }
+
+    // Samplers follow uniform distribution on sphere
+    double scattering_pdf(const ray &r_in, const hit_info &hit, const ray &scatted) const override
+    {
+        return 1.0 / (4.0 * PI);
     }
 
 private:

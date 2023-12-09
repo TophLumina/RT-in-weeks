@@ -142,27 +142,28 @@ inline vec3 normalize(vec3 v)
 
 inline vec3 random_in_unit_disk()
 {
-    while(1)
-    {
-        auto p = vec3(random_double(-1, 1), random_double(-1, 1), 0);
-        if (p.length_squared() < 1)
-            return p;
-    }
-}
+    double r1 = random_double();
+    double r2 = random_double();
 
-inline vec3 random_in_unit_sphere()
-{
-    while(1)
-    {
-        auto p = vec3::random(-1, 1);
-        if (p.length() < 1)
-            return p;
-    }
+    auto r = r1;
+    auto theta = 2 * PI * r2;
+
+    auto x = r * cos(theta);
+    auto y = r * sin(theta);
+
+    return vec3(x, y, 0);
 }
 
 inline vec3 random_unit_vector()
 {
-    return normalize(random_in_unit_sphere());
+    double r1 = random_double();
+    double r2 = random_double();
+
+    auto x = cos(2 * PI * r1) * 2 * sqrt(r2 * (1 - r2));
+    auto y = sin(2 * PI * r1) * 2 * sqrt(r2 * (1 - r2));
+    auto z = 1 - 2 * r2;
+
+    return vec3(x, y, z);
 }
 
 inline vec3 random_on_hemisphere(const vec3& normal)
@@ -172,6 +173,22 @@ inline vec3 random_on_hemisphere(const vec3& normal)
         return on_unit_sphere;
     else
         return -on_unit_sphere;
+}
+
+// Sampling direction weighted by cosine on upper hemisphere (z+)
+// PDF = cos(phi) / PI or dir.z / PI or dot(w, dir) / PI
+inline vec3 random_cosine_direction()
+{
+    auto r1 = random_double();
+    auto r2 = random_double();
+
+    auto phi = 2 * PI * r1;
+
+    auto x = cos(phi) * sqrt(r2);
+    auto y = sin(phi) * sqrt(r2);
+    auto z = sqrt(1 - r2);
+
+    return vec3(x, y, z);
 }
 
 inline vec3 reflect(const vec3& v, const vec3& n)

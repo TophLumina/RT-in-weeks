@@ -20,11 +20,8 @@ public:
     rtw_image(const char* image_filename)
     {
         auto filename = std::string(image_filename);
-        auto imagedir = getenv("RTW_IMAGES"); // check for RTW_IMAGES environment variable
     
         // Searching image file
-        if (imagedir && load(std::string(imagedir) + "/" + image_filename))
-            return;
         if (load(filename))
             return;
         if (load("img/" + filename))
