@@ -1,11 +1,12 @@
 #pragma once
 
+#include <thread>
 #include "rtweekend.h"
-#include "thread"
 
 #include "hittable_list.h"
 #include "material.h"
 #include "threading.h"
+#include "PDF.h"
 
 class camera
 {
@@ -21,13 +22,12 @@ public:
     vec3 vup = vec3(0, 1, 0);           // Absolute up direction (world space)
 
     double defocus_angle = 0;    // Variation angle of rays through each pixel
-    double focus_dist = 10;      // Distance form camera lookfrom point to perfect focus plane
+    double focus_dist = 10;      // Distance form camera look_from point to perfect focus plane
     double frame_duration = 1.0; // Shutter opening time
 
     color background = color(0, 0, 0); // Scene background color (more like env light actually, could add HDRI or cube_map support someday)
 
-    // Rendering
-    void render(const hittable_list /* don't get it, but it works, and it won't work with 'hittable' here*/ &world)
+    void render(const hittable &world, const hittable &lights)
     {
         initialize();
 
@@ -47,7 +47,7 @@ public:
         for (int j = 0; j < image_height; ++j)
         {
             // Load Threads
-            threads.emplace_back(&camera::render_line, this, world, j, buffer);
+            threads.emplace_back(&camera::render_line, this, world, j, buffer, lights);
         }
 
         thread thread_indicator(threading::threading_indicator, image_height);
@@ -169,7 +169,7 @@ private:
         return ray(ray_origin, ray_direction, ray_time);
     }
 
-    color ray_color(const ray &r, const hittable &world, double ray_gen_probability) const
+    color ray_color(const ray &r, const hittable &world, double ray_gen_probability, const hittable &lights) const
     {
         hit_info hit;
 
@@ -181,18 +181,23 @@ private:
             {
                 ray scattered;
                 color attenuation;
-                double pdf;
-                color emission_color = hit.mat->emitter(hit.u, hit.v, hit.hit_point);
+                double pdf_val;
+                color emission_color = hit.mat->emitter(r, hit, hit.u, hit.v, hit.hit_point);
 
-                if (!hit.mat->scatter(r, hit, attenuation, scattered, pdf))
+                if (!hit.mat->scatter(r, hit, attenuation, scattered, pdf_val))
                     return emission_color;
+
+                hittable_pdf light_pdf(lights, hit.hit_point);
+                scattered = ray(hit.hit_point, light_pdf.generate(), r.time());
+                pdf_val = light_pdf.value(scattered.direction());
 
                 double scattering_pdf = hit.mat->scattering_pdf(r, hit, scattered);
 
-                color scatter_color = (attenuation * scattering_pdf * ray_color(scattered, world, ray_gen_probability)) / pdf;
-                return emission_color + scatter_color;
+                color scatter_color = (attenuation * scattering_pdf * ray_color(scattered, world, ray_gen_probability, lights)) / pdf_val;
+                return emission_color + scatter_color / ray_gen_probability;
             }
-            return color();
+
+            return color(0, 0, 0);
         }
         // If ray hits nothing, simply return background color
         else
@@ -202,7 +207,7 @@ private:
     }
 
     // Funcs for MultiThreading (each thread handle a line)
-    void render_line(const hittable &world, int index_row, color **const buffer)
+    void render_line(const hittable &world, int index_row, color **const buffer, const hittable &lights)
     {
         for (int i = 0; i < image_width; ++i)
         {
@@ -213,7 +218,7 @@ private:
                 for (int s_j = 0; s_j < sqrt_spp; ++s_j)
                 {
                     ray r = get_primary_ray(index_row, i, s_i, s_j);
-                    pixel_color += ray_color(r, world, ray_gen_probability);
+                    pixel_color += ray_color(r, world, ray_gen_probability, lights);
                 }
             }
 

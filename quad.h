@@ -14,6 +14,7 @@ public:
         normal = normalize(n);
         D = dot(normal, Q);
         w = n / dot(n, n);
+        area = n.length();
 
         set_bounding_box();
     }
@@ -70,6 +71,24 @@ public:
         return true;
     }
 
+    double pdf_value(const point3& origin, const vec3& v) const override
+    {
+        hit_info hit;
+        if (!this->hit(ray(origin, v), interval(0.001, infinity), hit))
+            return 0;
+
+        auto distance_squared = hit.t * hit.t * v.length_squared();
+        auto cosine = fabs(dot(v, hit.normal) / v.length());
+
+        return distance_squared / (cosine * area);
+    }
+
+    vec3 random(const point3& origin) const override
+    {
+        auto p = Q + (random_double() * u) + (random_double() * v);
+        return p - origin;
+    }
+
 private:
     point3 Q;
     vec3 u, v;
@@ -78,6 +97,7 @@ private:
     vec3 normal;
     double D;
     vec3 w; // Cached value use for solving UV
+    double area;
 };
 
 // Return a 3D cube that contains the two opposite vertices a & b

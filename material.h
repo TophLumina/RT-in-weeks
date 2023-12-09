@@ -11,7 +11,7 @@ class material
 public:
     virtual ~material() = default;
 
-    virtual color emitter(double u, double v, const point3 &p) const
+    virtual color emitter(const ray &r_in, const hit_info &hit, double u, double v, const point3 &p) const
     {
         return color(0, 0, 0);
     }
@@ -29,13 +29,7 @@ public:
 
     bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override
     {
-        onb bTan;
-        bTan.build_from_w(hit.normal);
-        vec3 scatter_direction = bTan.local(random_cosine_direction());
-
-        scattered = ray(hit.hit_point, scatter_direction, r_in.time());
         attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
-        pdf = dot(bTan.w(), scattered.direction()) / PI;
         return true;
     }
 
@@ -120,7 +114,12 @@ public:
 
     bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override { return false; }
 
-    color emitter(double u, double v, const point3 &p) const override { return emit->value(u, v, p); }
+    color emitter(const ray &r_in, const hit_info &hit, double u, double v, const point3 &p) const override
+    {
+        if (!hit.front_face)
+            return color(0, 0, 0);
+        return emit->value(u, v, p);
+    }
 
 private:
     shared_ptr<texture> emit;

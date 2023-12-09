@@ -31,6 +31,9 @@ public:
     virtual ~hittable() = default;
     virtual bool hit(const ray &r, interval ray_t, hit_info &hit) const = 0;
     virtual aabb bounding_box() const = 0;
+
+    virtual double pdf_value(const point3 &origin, const vec3 &v) const { return 0.0; }
+    virtual vec3 random(const vec3 &origin) const { return vec3(1, 0, 0); }
 };
 
 class translate : public hittable
@@ -81,8 +84,8 @@ public:
                 for (int k = 0; k < 2; ++k)
                 {
                     auto x = i * bbox.x.max + (1 - i) * bbox.x.min;
-                    auto y = i * bbox.y.max + (1 - i) * bbox.y.min;
-                    auto z = i * bbox.z.max + (1 - i) * bbox.z.min;
+                    auto y = j * bbox.y.max + (1 - j) * bbox.y.min;
+                    auto z = k * bbox.z.max + (1 - k) * bbox.z.min;
 
                     auto _x = cos_theta * x + sin_theta * z;
                     auto _z = -sin_theta * x + cos_theta * z;

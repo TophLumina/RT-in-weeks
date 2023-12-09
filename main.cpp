@@ -11,7 +11,8 @@
 int main(int argc, char const *argv[])
 {
     hittable_list world;
-    SceneFunc(world);
+    hittable_list lights;
+    SceneFunc(world, lights);
 
     // Building acceleration structure(BVH Tree)
     world = hittable_list(make_shared<bvh_node>(world));
@@ -33,5 +34,5 @@ int main(int argc, char const *argv[])
     // cam.frame_duration = 1.0;
     clog << "Samplers: " << cam.samplers_per_pixel << '\n';
 
-    cam.render(world);
+    cam.render(world, lights);
 }
