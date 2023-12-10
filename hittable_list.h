@@ -59,6 +59,22 @@ public:
 
         return hit_any;
     }
+
+    double pdf_value(const point3 &origin, const vec3 &v) const
+    {
+        if (!objects.empty())
+            return objects[0]->pdf_value(origin, v);
+
+        return hittable::pdf_value(origin, v);
+    }
+    vec3 random(const vec3 &origin) const
+    {
+        if (!objects.empty())
+            return objects[0]->random(origin);
+
+        return hittable::random(origin);
+    }
+
 private:
     aabb bbox;
 };

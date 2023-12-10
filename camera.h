@@ -47,7 +47,7 @@ public:
         for (int j = 0; j < image_height; ++j)
         {
             // Load Threads
-            threads.emplace_back(&camera::render_line, this, world, j, buffer, lights);
+            threads.emplace_back(&camera::render_line, this, cref(world), j, buffer, cref(lights));
         }
 
         thread thread_indicator(threading::threading_indicator, image_height);
@@ -193,7 +193,8 @@ private:
 
                 double scattering_pdf = hit.mat->scattering_pdf(r, hit, scattered);
 
-                color scatter_color = (attenuation * scattering_pdf * ray_color(scattered, world, ray_gen_probability, lights)) / pdf_val;
+                color sample_color = ray_color(scattered, world, ray_gen_probability, lights);
+                color scatter_color = (attenuation * scattering_pdf * sample_color) / pdf_val;
                 return emission_color + scatter_color / ray_gen_probability;
             }
 
