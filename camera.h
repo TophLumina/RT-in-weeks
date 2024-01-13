@@ -8,8 +8,6 @@
 #include "threading.h"
 #include "PDF.h"
 
-#include "external/ThreadPool/threadpool.h"
-
 class camera
 {
 public:
@@ -41,39 +39,27 @@ public:
         }
 
         // Threads
-        // vector<thread> threads;
-
-        // ThreadPool
-        ThreadPool pool(16);
-
-        for (int i = 0; i < image_width; ++i)
-        {
-            for (int j = 0; j < image_height; ++j)
-            {
-                auto future = pool.submit(pixel_color, cref(world), i, j, cref(lights));
-                buffer[i][j] = future.get();
-            }
-        }
+        vector<thread> threads;
 
         // Timer
-        // auto start = chrono::steady_clock::now();
+        auto start = chrono::steady_clock::now();
 
-        // for (int j = 0; j < image_height; ++j)
-        // {
-        //     // Load Threads
-        //     threads.emplace_back(&camera::render_line, this, cref(world), j, buffer, cref(lights));
-        // }
+        for (int j = 0; j < image_height; ++j)
+        {
+            // Load Threads
+            threads.emplace_back(&camera::render_line, this, cref(world), j, buffer, cref(lights));
+        }
 
-        // thread thread_indicator(threading::threading_indicator, image_height);
-        // thread_indicator.detach();
+        thread thread_indicator(threading::threading_indicator, image_height);
+        thread_indicator.detach();
 
-        // for (int j = 0; j < image_height; ++j)
-        //     if (threads[j].joinable())
-        //         threads[j].join();
+        for (int j = 0; j < image_height; ++j)
+            if (threads[j].joinable())
+                threads[j].join();
 
-        // auto trace_end = chrono::steady_clock::now();
-        // auto tracing_time = chrono::duration_cast<chrono::seconds>(trace_end - start);
-        // clog << "\rTracing Completed. Ray Tracing Time: " << tracing_time.count() << "s" << endl;
+        auto trace_end = chrono::steady_clock::now();
+        auto tracing_time = chrono::duration_cast<chrono::seconds>(trace_end - start);
+        clog << "\rTracing Completed. Ray Tracing Time: " << tracing_time.count() << "s" << endl;
 
         // Transfer data from buffer to img
         cout << "P3\n"
@@ -86,10 +72,10 @@ public:
             }
         }
 
-        // auto transfer_end = chrono::steady_clock::now();
-        // auto rendering_time = chrono::duration_cast<chrono::seconds>(transfer_end - start);
+        auto transfer_end = chrono::steady_clock::now();
+        auto rendering_time = chrono::duration_cast<chrono::seconds>(transfer_end - start);
 
-        // std::clog << "Data Transfer Completed. Total Rendering Time: " << rendering_time.count() << 's' << endl;
+        std::clog << "Data Transfer Completed. Total Rendering Time: " << rendering_time.count() << 's' << endl;
 
         // Releasing resource
         for (int i = 0; i < image_height; ++i)
@@ -97,7 +83,7 @@ public:
             delete[] buffer[i];
         }
         delete[] buffer;
-        // threads.clear();
+        threads.clear();
     }
 
 private:
@@ -222,38 +208,25 @@ private:
     }
 
     // Funcs for MultiThreading (each thread handle a line)
-    // void render_line(const hittable &world, int index_row, color **const buffer, const hittable &lights)
-    // {
-    //     for (int i = 0; i < image_width; ++i)
-    //     {
-    //         color pixel_color(0, 0, 0);
-
-    //         for (int s_i = 0; s_i < sqrt_spp; ++s_i)
-    //         {
-    //             for (int s_j = 0; s_j < sqrt_spp; ++s_j)
-    //             {
-    //                 ray r = get_primary_ray(index_row, i, s_i, s_j);
-    //                 pixel_color += ray_color(r, world, ray_gen_probability, lights);
-    //             }
-    //         }
-
-    //         // Write all color into buffer
-    //         buffer[index_row][i] = pixel_color;
-    //     }
-
-    //     ++threading::thread_finished;
-    // }
-
-    color pixel_color(const hittable &world, int index_row, int index_col, const hittable &lights)
+    void render_line(const hittable &world, int index_row, color **const buffer, const hittable &lights)
     {
-        color pixel_col(0, 0, 0);
-        for (int s_i = 0; s_i < sqrt_spp; ++s_i)
+        for (int i = 0; i < image_width; ++i)
         {
-            for (int s_j = 0; s_j < sqrt_spp; ++s_j)
+            color pixel_color(0, 0, 0);
+
+            for (int s_i = 0; s_i < sqrt_spp; ++s_i)
             {
-                ray r = get_primary_ray(index_row, index_col, s_i, s_j);
-                pixel_col += ray_color(r, world, ray_gen_probability, lights);
+                for (int s_j = 0; s_j < sqrt_spp; ++s_j)
+                {
+                    ray r = get_primary_ray(index_row, i, s_i, s_j);
+                    pixel_color += ray_color(r, world, ray_gen_probability, lights);
+                }
             }
+
+            // Write all color into buffer
+            buffer[index_row][i] = pixel_color;
         }
+
+        ++threading::thread_finished;
     }
 };

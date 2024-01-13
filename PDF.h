@@ -6,7 +6,7 @@
 
 // Any pdf class(or subclass) should be able of
 // 1. Returning a random direction weighted by the internal PDF distribution
-// 2. Returning the corresponding PDF distribution value of that direction
+// 2. Returning the corresponding PDF distribution value in that direction
 class pdf
 {
 public:

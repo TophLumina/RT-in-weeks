@@ -9,7 +9,7 @@
 
 using namespace std;
 
-class threading
+class threading // now served as a helper function lib, might be reconstructed into thread pool someday
 {
 public:
     static void threading_indicator(int total_lines)
