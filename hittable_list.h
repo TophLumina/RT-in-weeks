@@ -60,6 +60,7 @@ public:
         return hit_any;
     }
 
+    // I will improve this someday
     double pdf_value(const point3 &origin, const vec3 &v) const
     {
         if (!objects.empty())
