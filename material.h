@@ -21,6 +21,7 @@ public:
     virtual double scattering_pdf(const ray &r_in, const hit_info &hit, const ray &scatted) const { return 0; }
 };
 
+// Diffuse material scattering weighted by cos(theta)
 class lambertian : public material
 {
 public:
@@ -29,7 +30,15 @@ public:
 
     bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override
     {
+        onb tan_space;
+        tan_space.build_from_w(hit.normal);
+
+        auto scatter_dir = tan_space.local(random_cosine_direction());
+        scattered = ray(hit.hit_point, normalize(scatter_dir), r_in.time());
+
         attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
+        pdf = dot(tan_space.w(), scattered.direction()) / PI;
+
         return true;
     }
 
@@ -37,6 +46,31 @@ public:
     {
         auto cos_theta = dot(hit.normal, normalize(scatted.direction()));
         return cos_theta < 0 ? 0 : cos_theta / PI;
+    }
+
+private:
+    shared_ptr<texture> albedo;
+};
+
+// Diffuse material scattering weighted by random directions
+class diffuse : public material
+{
+public:
+    diffuse(const shared_ptr<texture> _tex) : albedo(_tex) {}
+    diffuse(const color &c) : diffuse(make_shared<solid_color>(c)) {}
+
+    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override
+    {
+        auto scatter_dir = random_on_hemisphere(hit.normal);
+
+        scattered = ray(hit.hit_point, scatter_dir, r_in.time());
+        attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
+        return true;
+    }
+
+    double scattering_pdf(const ray &r_in, const hit_info &hit, const ray &scatted) const override
+    {
+        return 1 / (2.0 * PI);
     }
 
 private:

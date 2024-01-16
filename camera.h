@@ -7,36 +7,33 @@
 #include "material.h"
 #include "threading.h"
 #include "PDF.h"
+#include "FrameBuffer.h"
 
 class camera
 {
 public:
-    double aspect_ratio = 1.0;        // Ratio of image width over height
-    int image_width = 1;              // Rendered image width in pixel count
-    int samplers_per_pixel = 16;      // Amount of samplers for each pixel
-    double ray_gen_probability = 0.6; // Probability of ray generation. (Instead of using max depth, let's try Russian Roulette!)
+    double aspect_ratio = 1.0;          // Ratio of image width over height
+    int image_width = 1;                // Rendered image width in pixel count
+    int samplers_per_pixel = 16;        // Amount of samplers for each pixel
+    double ray_gen_probability = 0.6;   // Probability of ray generation. (Instead of using max depth, let's try Russian Roulette!)
 
     double vfov = 90;                   // Vertical field of view
     point3 lookfrom = point3(0, 0, -1); // Point where camera is looking from
     point3 lookat = point3(0, 0, 0);    // Point where camera is looking at
     vec3 vup = vec3(0, 1, 0);           // Absolute up direction (world space)
 
-    double defocus_angle = 0;    // Variation angle of rays through each pixel
-    double focus_dist = 10;      // Distance form camera look_from point to perfect focus plane
-    double frame_duration = 1.0; // Shutter opening time
+    double defocus_angle = 0;           // Variation angle of rays through each pixel
+    double focus_dist = 10;             // Distance form camera look_from point to perfect focus plane
+    double frame_duration = 1.0;        // Shutter opening time
 
-    color background = color(0, 0, 0); // Scene background color (more like env light actually, could add HDRI or cube_map support someday)
+    color background = color(0, 0, 0);  // Scene background color (more like env light actually, could add HDRI or cube_map support someday)
 
     void render(const hittable &world, const hittable &lights)
     {
         initialize();
 
         // Buffer
-        color **buffer = new color *[image_height];
-        for (int i = 0; i < image_height; ++i)
-        {
-            buffer[i] = new color[image_width];
-        }
+        FrameBuffer<color> color_buffer(image_width, image_height);
 
         // Threads
         vector<thread> threads;
@@ -47,7 +44,7 @@ public:
         for (int j = 0; j < image_height; ++j)
         {
             // Load Threads
-            threads.emplace_back(&camera::render_line, this, cref(world), j, buffer, cref(lights));
+            threads.emplace_back(&camera::render_line, this, cref(world), j, color_buffer.data, cref(lights));
         }
 
         thread thread_indicator(threading::threading_indicator, image_height);
@@ -64,11 +61,11 @@ public:
         // Transfer data from buffer to img
         cout << "P3\n"
              << image_width << ' ' << image_height << "\n255\n";
-        for (int j = 0; j < image_height; ++j)
+        for (int i = 0; i < image_height; ++i)
         {
-            for (int i = 0; i < image_width; ++i)
+            for (int j = 0; j < image_width; ++j)
             {
-                write_color(cout, buffer[j][i], samplers_per_pixel);
+                write_color(cout, color_buffer.data[i][j], samplers_per_pixel);
             }
         }
 
@@ -78,11 +75,6 @@ public:
         std::clog << "Data Transfer Completed. Total Rendering Time: " << rendering_time.count() << 's' << endl;
 
         // Releasing resource
-        for (int i = 0; i < image_height; ++i)
-        {
-            delete[] buffer[i];
-        }
-        delete[] buffer;
         threads.clear();
     }
 
@@ -187,14 +179,18 @@ private:
                 if (!hit.mat->scatter(r, hit, attenuation, scattered, pdf_val))
                     return emission_color;
 
-                hittable_pdf light_pdf(lights, hit.hit_point);
-                scattered = ray(hit.hit_point, light_pdf.generate(), r.time());
-                pdf_val = light_pdf.value(scattered.direction());
+                auto surface_pdf = make_shared<cosine_hemisphere_pdf>(hit.normal);
+                auto light_pdf = make_shared<hittable_pdf>(lights, hit.hit_point);
+                mixture_pdf mixed_pdf(surface_pdf, light_pdf);
+
+                scattered = ray(hit.hit_point, mixed_pdf.generate(), r.time());
+                pdf_val = mixed_pdf.value(scattered.direction());
 
                 double scattering_pdf = hit.mat->scattering_pdf(r, hit, scattered);
 
                 color sample_color = ray_color(scattered, world, ray_gen_probability, lights);
                 color scatter_color = (attenuation * scattering_pdf * sample_color) / pdf_val;
+                
                 return emission_color + scatter_color / ray_gen_probability;
             }
 

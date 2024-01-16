@@ -71,3 +71,29 @@ private:
     const hittable &objects;
     point3 origin;
 };
+
+class mixture_pdf : public pdf
+{
+public:
+    mixture_pdf(shared_ptr<pdf> p0, shared_ptr<pdf> p1)
+    {
+        src_pdf[0] = p0;
+        src_pdf[1] = p1;
+    }
+
+    double value(const vec3& direction) const override
+    {
+        return 0.5 * src_pdf[0]->value(direction) + 0.5 * src_pdf[1]->value(direction);
+    }
+
+    vec3 generate() const override
+    {
+        if (random_double() < 0.5)
+            return src_pdf[0]->generate();
+        else
+            return src_pdf[1]->generate();
+    }
+
+private:
+    shared_ptr<pdf> src_pdf[2];
+};
