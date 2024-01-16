@@ -75,20 +75,22 @@ private:
 class mixture_pdf : public pdf
 {
 public:
-    mixture_pdf(shared_ptr<pdf> p0, shared_ptr<pdf> p1)
+    // when getting mixed_pdf value, it will follow by _mix_param * p0 + (1.0 - _mix_param) * p1
+    mixture_pdf(shared_ptr<pdf> p0, shared_ptr<pdf> p1, double _mix_param = 0.5)
     {
         src_pdf[0] = p0;
         src_pdf[1] = p1;
+        mix_param = max(min(1.0, _mix_param), 0.0); // clamp to [0.0, 1.0]
     }
 
     double value(const vec3& direction) const override
     {
-        return 0.5 * src_pdf[0]->value(direction) + 0.5 * src_pdf[1]->value(direction);
+        return mix_param * src_pdf[0]->value(direction) + (1.0 - mix_param) * src_pdf[1]->value(direction);
     }
 
     vec3 generate() const override
     {
-        if (random_double() < 0.5)
+        if (random_double() < mix_param)
             return src_pdf[0]->generate();
         else
             return src_pdf[1]->generate();
@@ -96,4 +98,5 @@ public:
 
 private:
     shared_ptr<pdf> src_pdf[2];
+    double mix_param;
 };

@@ -181,7 +181,7 @@ private:
 
                 auto surface_pdf = make_shared<cosine_hemisphere_pdf>(hit.normal);
                 auto light_pdf = make_shared<hittable_pdf>(lights, hit.hit_point);
-                mixture_pdf mixed_pdf(surface_pdf, light_pdf);
+                mixture_pdf mixed_pdf(surface_pdf, light_pdf, 0.75);
 
                 scattered = ray(hit.hit_point, mixed_pdf.generate(), r.time());
                 pdf_val = mixed_pdf.value(scattered.direction());
