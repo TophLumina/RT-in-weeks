@@ -4,8 +4,6 @@
 #include "texture.h"
 #include "ONB.h"
 
-class hit_info;
-
 class material
 {
 public:
