@@ -46,7 +46,7 @@ private:
     shared_ptr<texture> odd;
 };
 
-#include "rt_stb_image.h"
+#include "stb_impl.h"
 
 class image_texture : public texture
 {

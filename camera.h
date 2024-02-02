@@ -12,21 +12,21 @@
 class camera
 {
 public:
-    double aspect_ratio = 1.0;          // Ratio of image width over height
-    int image_width = 1;                // Rendered image width in pixel count
-    int samplers_per_pixel = 16;        // Amount of samplers for each pixel
-    double ray_gen_probability = 0.6;   // Probability of ray generation. (Instead of using max depth, let's try Russian Roulette!)
+    double aspect_ratio = 1.0;   // Ratio of image width over height
+    int image_width = 1;         // Rendered image width in pixel count
+    int samplers_per_pixel = 16; // Amount of samplers for each pixel
+    int max_depth = 20;          // Ray bounce limit
 
     double vfov = 90;                   // Vertical field of view
     point3 lookfrom = point3(0, 0, -1); // Point where camera is looking from
     point3 lookat = point3(0, 0, 0);    // Point where camera is looking at
     vec3 vup = vec3(0, 1, 0);           // Absolute up direction (world space)
 
-    double defocus_angle = 0;           // Variation angle of rays through each pixel
-    double focus_dist = 10;             // Distance form camera look_from point to perfect focus plane
-    double frame_duration = 1.0;        // Shutter opening time
+    double defocus_angle = 0;    // Variation angle of rays through each pixel
+    double focus_dist = 10;      // Distance form camera look_from point to perfect focus plane
+    double frame_duration = 1.0; // Shutter opening time
 
-    color background = color(0, 0, 0);  // Scene background color (more like env light actually, could add HDRI or cube_map support someday)
+    color background = color(0, 0, 0); // Scene background color (more like env light actually, could add HDRI or cube_map support someday)
 
     void render(const hittable &world, const hittable &lights)
     {
@@ -58,9 +58,10 @@ public:
         auto tracing_time = chrono::duration_cast<chrono::seconds>(trace_end - start);
         clog << "\rTracing Completed. Ray Tracing Time: " << tracing_time.count() << "s" << endl;
 
-        // Transfer data from buffer to img
-        cout << "P3\n"
-             << image_width << ' ' << image_height << "\n255\n";
+        // PPM output
+        cout
+            << "P3\n"
+            << image_width << ' ' << image_height << "\n255\n";
         for (int i = 0; i < image_height; ++i)
         {
             for (int j = 0; j < image_width; ++j)
@@ -69,6 +70,20 @@ public:
             }
         }
 
+        // PNG output
+        int comp = 3;
+        function<void(color, unsigned char *)> trans = [&](color c, unsigned char *p) -> void
+        {
+            for (int i = 0; i < comp; ++i)
+            {
+                int val = static_cast<int>(255.99 *const interval(0.000, 0.999).clamp(linear2gamma(c.e[i] / samplers_per_pixel)));
+                p[i] = static_cast<unsigned char>(val);
+            }
+            return;
+        };
+        rtw_image image(color_buffer, comp, trans);
+        image.saveasPNG("./image.png");
+
         auto transfer_end = chrono::steady_clock::now();
         auto rendering_time = chrono::duration_cast<chrono::seconds>(transfer_end - start);
 
@@ -76,6 +91,7 @@ public:
 
         // Releasing resource
         threads.clear();
+        // delete[] image_data;
     }
 
 private:
@@ -161,15 +177,15 @@ private:
         return ray(ray_origin, ray_direction, ray_time);
     }
 
-    color ray_color(const ray &r, const hittable &world, double ray_gen_probability, const hittable &lights) const
+    color ray_color(const ray &r, const hittable &world, int current_depth, const hittable &lights) const
     {
         hit_info hit;
 
         // Simply address the floating point error on intersection by ignoring intersecting point which is close enough to surfaces
         if (world.hit(r, interval(0.001, infinity), hit))
         {
-            double p = random_double();
-            if (p < ray_gen_probability)
+            --current_depth;
+            if (current_depth > 0)
             {
                 ray scattered;
                 color attenuation;
@@ -188,10 +204,10 @@ private:
 
                 double scattering_pdf = hit.mat->scattering_pdf(r, hit, scattered);
 
-                color sample_color = ray_color(scattered, world, ray_gen_probability, lights);
+                color sample_color = ray_color(scattered, world, current_depth, lights);
                 color scatter_color = (attenuation * scattering_pdf * sample_color) / pdf_val;
-                
-                return emission_color + scatter_color / ray_gen_probability;
+
+                return emission_color + scatter_color;
             }
 
             return color(0, 0, 0);
@@ -215,7 +231,7 @@ private:
                 for (int s_j = 0; s_j < sqrt_spp; ++s_j)
                 {
                     ray r = get_primary_ray(index_row, i, s_i, s_j);
-                    pixel_color += ray_color(r, world, ray_gen_probability, lights);
+                    pixel_color += ray_color(r, world, max_depth, lights);
                 }
             }
 

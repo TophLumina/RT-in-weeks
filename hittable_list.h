@@ -18,7 +18,7 @@ public:
     hittable_list() {}
     hittable_list(shared_ptr<hittable> object){ add(object); }
 
-    aabb bounding_box() const { return bbox; }
+    aabb bounding_box() const override { return bbox; }
 
     void clear()
     {
@@ -60,14 +60,14 @@ public:
         return hit_any;
     }
 
-    double pdf_value(const point3 &origin, const vec3 &v) const
+    double pdf_value(const point3 &origin, const vec3 &v) const override
     {
         if (!objects.empty())
             return objects[0]->pdf_value(origin, v);
 
         return hittable::pdf_value(origin, v);
     }
-    vec3 random(const vec3 &origin) const
+    vec3 random(const vec3 &origin) const override
     {
         if (!objects.empty())
             return objects[0]->random(origin);
