@@ -58,17 +58,17 @@ public:
         auto tracing_time = chrono::duration_cast<chrono::seconds>(trace_end - start);
         clog << "\rTracing Completed. Ray Tracing Time: " << tracing_time.count() << "s" << endl;
 
-        // PPM output
-        cout
-            << "P3\n"
-            << image_width << ' ' << image_height << "\n255\n";
-        for (int i = 0; i < image_height; ++i)
-        {
-            for (int j = 0; j < image_width; ++j)
-            {
-                write_color(cout, color_buffer.data[i][j], samplers_per_pixel);
-            }
-        }
+        // // PPM output
+        // cout
+        //     << "P3\n"
+        //     << image_width << ' ' << image_height << "\n255\n";
+        // for (int i = 0; i < image_height; ++i)
+        // {
+        //     for (int j = 0; j < image_width; ++j)
+        //     {
+        //         write_color(cout, color_buffer.data[i][j], samplers_per_pixel);
+        //     }
+        // }
 
         // PNG output
         int comp = 3;
