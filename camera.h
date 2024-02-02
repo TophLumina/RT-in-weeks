@@ -82,7 +82,7 @@ public:
             return;
         };
         rtw_image image(color_buffer, comp, trans);
-        image.saveasPNG("./image.png");
+        image.saveasPNG("./result.png");
 
         auto transfer_end = chrono::steady_clock::now();
         auto rendering_time = chrono::duration_cast<chrono::seconds>(transfer_end - start);

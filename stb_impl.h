@@ -70,10 +70,10 @@ public:
         y = clamp(y, 0, image_height);
         return data + y * bytes_per_line + x * bytes_per_pixel;
     }
-    unsigned char *data;
 
 private:
     int bytes_per_pixel = 3;
+    unsigned char *data;
     int image_width;
     int image_height;
     int bytes_per_line;
