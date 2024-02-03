@@ -10,7 +10,7 @@
 class pdf
 {
 public:
-    virtual ~pdf() {};
+    virtual ~pdf(){};
 
     virtual double value(const vec3 &direction) const = 0;
     virtual vec3 generate() const = 0;
@@ -21,7 +21,7 @@ class uniform_sphere_pdf : public pdf
 public:
     uniform_sphere_pdf() {}
 
-    double value(const vec3& direction) const override
+    double value(const vec3 &direction) const override
     {
         return 1.0 / (4.0 * PI);
     }
@@ -37,7 +37,7 @@ class cosine_hemisphere_pdf : public pdf
 public:
     cosine_hemisphere_pdf(const vec3 &w) { coord.build_from_w(w); }
 
-    double value(const vec3& direction) const override
+    double value(const vec3 &direction) const override
     {
         auto cos_theta = dot(normalize(direction), coord.w());
         return fmax(0.0, cos_theta / PI);
@@ -55,9 +55,9 @@ private:
 class hittable_pdf : public pdf
 {
 public:
-    hittable_pdf(const hittable& _objects, const point3& _origin) : objects(_objects), origin(_origin) {}
+    hittable_pdf(const hittable &_objects, const point3 &_origin) : objects(_objects), origin(_origin) {}
 
-    double value(const vec3& direction) const override
+    double value(const vec3 &direction) const override
     {
         return objects.pdf_value(origin, direction);
     }
@@ -83,7 +83,7 @@ public:
         mix_param = max(min(1.0, _mix_param), 0.0); // clamp to [0.0, 1.0]
     }
 
-    double value(const vec3& direction) const override
+    double value(const vec3 &direction) const override
     {
         return mix_param * src_pdf[0]->value(direction) + (1.0 - mix_param) * src_pdf[1]->value(direction);
     }

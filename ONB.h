@@ -18,7 +18,7 @@ public:
 
     vec3 local(const vec3 &vec) const { return vec.x() * u() + vec.y() * v() + vec.z() * w(); }
 
-    void build_from_w(const vec3& w)
+    void build_from_w(const vec3 &w)
     {
         vec3 w_norm = normalize(w);
         vec3 a = (fabs(w_norm.x()) > 0.9) ? vec3(0, 1, 0) : vec3(1, 0, 0);

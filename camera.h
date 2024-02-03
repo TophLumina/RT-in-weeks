@@ -195,6 +195,8 @@ private:
                 if (!hit.mat->scatter(r, hit, attenuation, scattered, pdf_val))
                     return emission_color;
 
+                // TODO need to implement additional shadow rays here
+
                 auto surface_pdf = make_shared<cosine_hemisphere_pdf>(hit.normal);
                 auto light_pdf = make_shared<hittable_pdf>(lights, hit.hit_point);
                 mixture_pdf mixed_pdf(surface_pdf, light_pdf, 0.75);

@@ -1,5 +1,6 @@
 build
+.history
 .vscode
 *.ppm
-*.png
-*.jpg
+image.png
+result.png

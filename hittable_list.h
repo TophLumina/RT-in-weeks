@@ -16,7 +16,7 @@ public:
     vector<shared_ptr<hittable>> objects;
 
     hittable_list() {}
-    hittable_list(shared_ptr<hittable> object){ add(object); }
+    hittable_list(shared_ptr<hittable> object) { add(object); }
 
     aabb bounding_box() const override { return bbox; }
 
@@ -37,7 +37,7 @@ public:
     {
         for (auto i : object_list->objects)
             objects.push_back(i);
-        
+
         bbox = aabb(bbox, object_list->bounding_box());
     }
 
@@ -47,9 +47,9 @@ public:
         bool hit_any = false;
         auto closest_so_far = ray_t.max;
 
-        for (const auto& object : objects)
+        for (const auto &object : objects)
         {
-            if (object -> hit(r, interval(ray_t.min, closest_so_far), tmp))
+            if (object->hit(r, interval(ray_t.min, closest_so_far), tmp))
             {
                 hit_any = true;
                 closest_so_far = tmp.t;

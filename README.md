@@ -8,19 +8,22 @@ under project folder:
 cmake . -Bbuild
 cmake --build build
 ```
-and you should find the executable in *./build*.
+
+and you should find the executable in _./build_.
 
 to run the code directly:
+
 ```powershell
 RayTracing.exe > ./image.ppm
 ```
+
 or with custom samplers amount (taking 512 for an example)
 
 ```powershell
 RayTracing.exe > ./image.ppm 512
 ```
 
-***BE AWARE!!*** Due to my poor coding technics, your PC is much likely to be ***FROZEN*** during the run. Sorry about that :(
+**_BE AWARE!!_** Due to my poor coding technics, your PC is much likely to be **_FROZEN_** during the run. Sorry about that :(
 
 Here comes some images rendered from the little Ray Tracer :)
 

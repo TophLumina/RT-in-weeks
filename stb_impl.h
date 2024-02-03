@@ -88,7 +88,7 @@ private:
     }
 
     template <typename T>
-    bool load(const FrameBuffer<T> fb, std::function<void(T, unsigned char*)> trans)
+    bool load(const FrameBuffer<T> fb, const std::function<void(T, unsigned char*)> trans)  // Any data from framebuffer to img, should have provide a function to convert that specific data to unsigned char* first
     {
         // load image from framebuffer, return true if succeed
         unsigned char *pixel_data = new unsigned char[bytes_per_pixel];

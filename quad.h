@@ -71,7 +71,7 @@ public:
         return true;
     }
 
-    double pdf_value(const point3& origin, const vec3& v) const override
+    double pdf_value(const point3 &origin, const vec3 &v) const override
     {
         hit_info hit;
         if (!this->hit(ray(origin, v), interval(0.001, infinity), hit))
@@ -83,7 +83,7 @@ public:
         return distance_squared / (cosine * area);
     }
 
-    vec3 random(const point3& origin) const override
+    vec3 random(const point3 &origin) const override
     {
         auto p = Q + (random_double() * u) + (random_double() * v);
         return p - origin;
