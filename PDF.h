@@ -32,6 +32,24 @@ public:
     }
 };
 
+class uniform_hemisphere_pdf : public pdf
+{
+public:
+    uniform_hemisphere_pdf(const vec3 &n) { normal = n; }
+
+    double value(const vec3 &direction) const override
+    {
+        return 1.0 / (2.0 * PI);
+    }
+
+    vec3 generate() const override
+    {
+        return random_on_hemisphere(normal);
+    }
+private:
+    vec3 normal;
+};
+
 class cosine_hemisphere_pdf : public pdf
 {
 public:
@@ -80,7 +98,7 @@ public:
     {
         src_pdf[0] = p0;
         src_pdf[1] = p1;
-        mix_param = max(min(1.0, _mix_param), 0.0); // clamp to [0.0, 1.0]
+        mix_param = std::max(std::min(1.0, _mix_param), 0.0); // clamp to [0.0, 1.0]
     }
 
     double value(const vec3 &direction) const override

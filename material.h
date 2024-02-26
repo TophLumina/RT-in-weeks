@@ -3,6 +3,16 @@
 #include "rtweekend.h"
 #include "texture.h"
 #include "ONB.h"
+#include "PDF.h"
+
+class scatter_info
+{
+public:
+    color attenuation;
+    shared_ptr<pdf> pdf_ptr;
+    bool no_pdf;
+    ray ray_without_pdf;
+};
 
 class material
 {
@@ -14,7 +24,7 @@ public:
         return color(0, 0, 0);
     }
 
-    virtual bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const = 0;
+    virtual bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const = 0;
 
     virtual double scattering_pdf(const ray &r_in, const hit_info &hit, const ray &scatted) const { return 0; }
 };
@@ -26,16 +36,11 @@ public:
     lambertian(const shared_ptr<texture> _tex) : albedo(_tex) {}
     lambertian(const color &c) : lambertian(make_shared<solid_color>(c)) {}
 
-    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override
+    bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo)const override
     {
-        onb tan_space;
-        tan_space.build_from_w(hit.normal);
-
-        auto scatter_dir = tan_space.local(random_cosine_direction());
-        scattered = ray(hit.hit_point, normalize(scatter_dir), r_in.time());
-
-        attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
-        pdf = dot(tan_space.w(), scattered.direction()) / PI;
+        sinfo.attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
+        sinfo.pdf_ptr = make_shared<cosine_hemisphere_pdf>(hit.normal);
+        sinfo.no_pdf = false;
 
         return true;
     }
@@ -57,12 +62,12 @@ public:
     diffuse(const shared_ptr<texture> _tex) : albedo(_tex) {}
     diffuse(const color &c) : diffuse(make_shared<solid_color>(c)) {}
 
-    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override
+    bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {
-        auto scatter_dir = random_on_hemisphere(hit.normal);
+        sinfo.attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
+        sinfo.pdf_ptr = make_shared<uniform_hemisphere_pdf>(hit.normal);
+        sinfo.no_pdf = false;
 
-        scattered = ray(hit.hit_point, scatter_dir, r_in.time());
-        attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
         return true;
     }
 
@@ -81,12 +86,16 @@ public:
     metal(const shared_ptr<texture> _tex, double f) : albedo(_tex), fuzz(f < 1 ? f : 1) {}
     metal(const color &c, double f) : metal(make_shared<solid_color>(c), f) {}
 
-    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override
+    bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {
+        sinfo.attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
+        sinfo.pdf_ptr = nullptr;
+        sinfo.no_pdf = true;
+
         vec3 reflected = reflect(normalize(r_in.direction()), hit.normal);
-        scattered = ray(hit.hit_point, reflected + fuzz * random_unit_vector(), r_in.time());
-        attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
-        return dot(scattered.direction(), hit.normal) > 0; // Ensure that fuzz_scattered ray comes out
+        sinfo.ray_without_pdf = ray(hit.hit_point, reflected + fuzz * random_unit_vector(), r_in.time());
+
+        return dot(sinfo.ray_without_pdf.direction(), hit.normal) > 0; // Ensure that fuzz_scattered ray comes out
     }
 
 private:
@@ -99,9 +108,12 @@ class dielectric : public material
 public:
     dielectric(double index_of_reflection) : ir(index_of_reflection) {}
 
-    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override
+    bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {
-        attenuation = color(1.0, 1.0, 1.0); // Material like glass or water usually absorb nothing, so there is no effect on the incoming ray
+        sinfo.attenuation = color(0.0, 0.0, 0.0); // Material like glass or water usually absorb nothing, so there is no effect on the incoming ray
+        sinfo.pdf_ptr = nullptr;
+        sinfo.no_pdf = true;
+
         double refraction_ratio = hit.front_face ? (1.0 / ir) : ir;
 
         vec3 in_normalized = normalize(r_in.direction());
@@ -120,7 +132,7 @@ public:
             out = refract(in_normalized, hit.normal, refraction_ratio);
         }
 
-        scattered = ray(hit.hit_point, out, r_in.time());
+        sinfo.ray_without_pdf = ray(hit.hit_point, out, r_in.time());
         return true;
     }
 
@@ -144,7 +156,7 @@ public:
     diffuse_light(shared_ptr<texture> e) : emit(e) {}
     diffuse_light(color c) : emit(make_shared<solid_color>(c)) {}
 
-    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override { return false; }
+    bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override { return false; }
 
     color emitter(const ray &r_in, const hit_info &hit, double u, double v, const point3 &p) const override
     {
@@ -163,11 +175,11 @@ public:
     isotropic(shared_ptr<texture> _tex) : albedo(_tex) {}
     isotropic(color _col) : isotropic(make_shared<solid_color>(_col)) {}
 
-    bool scatter(const ray &r_in, const hit_info &hit, color &attenuation, ray &scattered, double &pdf) const override
+    bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {
-        scattered = ray(hit.hit_point, random_unit_vector(), r_in.time());
-        attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
-        pdf = 1.0 / (4.0 * PI);
+        sinfo.attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
+        sinfo.pdf_ptr = make_shared<uniform_sphere_pdf>();
+        sinfo.no_pdf = false;
 
         return true;
     }

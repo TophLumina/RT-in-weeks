@@ -53,7 +53,16 @@ public:
 
     void saveasPNG(std::string filename) const
     {
-        stbi_write_png(filename.c_str(), image_width, image_height, bytes_per_pixel, data, bytes_per_line);
+        auto tmp = stbi_write_png(filename.c_str(), image_width, image_height, bytes_per_pixel, data, bytes_per_line);
+        // error log at image output
+        if (tmp == 0)
+            std::cerr << "ERROR:: IMAGE TO PNG FAILED." << std::endl;
+    }
+
+    // TODO:: support PPM image in camera class.
+    void saveasPPM(std::string filename) const
+    {
+        
     }
 
     int width() const { return data == nullptr ? 0 : image_width; }
