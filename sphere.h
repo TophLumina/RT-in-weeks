@@ -62,6 +62,28 @@ public:
         return bbox;
     }
 
+    double pdf_value(const point3 &origin, const vec3 &v) const override
+    // the method only works for stationary spheres
+    {
+        hit_info hit;
+        if (!this->hit(ray(origin, v), interval(0.001, infinity), hit))
+            return 0;
+
+        auto cos_theta_max = sqrt(1 - pow(radius, 2) / (center0 - origin).length_squared());
+        auto solid_angle = 2 * PI * (1 - cos_theta_max);
+
+        return 1 / solid_angle;
+    }
+
+    vec3 random(const point3 &origin) const override
+    {
+        vec3 dir = center0 - origin;
+        auto dist_squared = dir.length_squared();
+        onb coord;
+        coord.build_from_w(dir);
+        return coord.local(random2sphere(radius, dist_squared));
+    }
+
 private:
     point3 center0;
     double radius;
@@ -89,5 +111,18 @@ private:
 
         u = phi / (2 * PI);
         v = theta / PI;
+    }
+
+    static vec3 random2sphere(double radius, double dist_squared)
+    {
+        auto r1 = random_double();
+        auto r2 = random_double();
+        auto z = 1 + r2 * (sqrt(1 - pow(radius, 2) / dist_squared) - 1);
+
+        auto phi = 2 * PI * r1;
+        auto x = cos(phi) * sqrt(1 - pow(z, 2));
+        auto y = sin(phi) * sqrt(1 - pow(z, 2));
+
+        return vec3(x, y, z);
     }
 };
