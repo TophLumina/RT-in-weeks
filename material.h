@@ -110,7 +110,7 @@ public:
 
     bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {
-        sinfo.attenuation = color(0.0, 0.0, 0.0); // Material like glass or water usually absorb nothing, so there is no effect on the incoming ray
+        sinfo.attenuation = color(1.0, 1.0, 1.0); // Material like glass or water usually absorb nothing, so there is no effect on the incoming ray
         sinfo.pdf_ptr = nullptr;
         sinfo.no_pdf = true;
 
