@@ -31,8 +31,6 @@ Here comes some images rendered from the little Ray Tracer :)
 
 ![Noise Sphere with Lighting](./img/readme/readme1.png "Noise Sphere with Lighting, 512 Samplers")
 
-![Cornell Box](./img/readme/readme2.png "Cornell Box, 512 Samplers")
-
-![Cornell Box Smoke](./img/readme/readme3.png "Cornell Box Smoke, 512 Samplers")
-
 ![Image with all Features](./img/readme/readme4.png "all Features, 10240 Samplers")
+
+![Cornel Box Modified](./img/readme/readme2.png "Cornel Box With Metal and Glass, 256 Samples")
