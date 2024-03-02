@@ -20,7 +20,7 @@ RayTracing.exe > ./image.ppm
 or with custom samplers amount (taking 512 for an example)
 
 ```powershell
-RayTracing.exe > ./image.ppm 512
+RayTracing.exe 512
 ```
 
 **_BE AWARE!!_** Due to my poor coding technics, your PC is much likely to be **_FROZEN_** during the run. Sorry about that :(
