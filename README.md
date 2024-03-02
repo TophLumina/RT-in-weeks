@@ -14,7 +14,7 @@ and you should find the executable in _./build_.
 to run the code directly:
 
 ```powershell
-RayTracing.exe > ./image.ppm
+RayTracing.exe
 ```
 
 or with custom samplers amount (taking 512 for an example)
