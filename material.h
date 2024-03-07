@@ -36,7 +36,7 @@ public:
     lambertian(const shared_ptr<texture> _tex) : albedo(_tex) {}
     lambertian(const color &c) : lambertian(make_shared<solid_color>(c)) {}
 
-    bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo)const override
+    bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {
         sinfo.attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
         sinfo.pdf_ptr = make_shared<cosine_hemisphere_pdf>(hit.normal);
