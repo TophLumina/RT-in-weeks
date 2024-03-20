@@ -76,7 +76,7 @@ public:
         {
             for (int i = 0; i < comp; ++i)
             {
-                int val = static_cast<int>(255.99 * (const interval(0.000, 0.999)).clamp(linear2gamma(c.e[i] / samplers_per_pixel)));
+                int val = static_cast<int>(255.99 * interval(0.000, 0.999).clamp(linear2gamma(c.e[i] / samplers_per_pixel)));
                 p[i] = static_cast<unsigned char>(val);
             }
             return;
