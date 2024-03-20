@@ -1,7 +1,5 @@
 #include "rtweekend.h"
 
-#include "color.h"
-#include "material.h"
 #include "camera.h"
 
 #include "BVH.h"
