@@ -1,14 +1,20 @@
 #pragma once
 
-#include <thread>
 #include "rtweekend.h"
+#include <atomic>
+#include <chrono>
+#include <future>
+#include <queue>
+#include <thread>
 
+
+#include "FrameBuffer.h"
+#include "PDF.h"
+#include "ThreadPool.hpp"
 #include "hittable_list.h"
 #include "material.h"
-#include "threading.h"
-#include "PDF.h"
-#include "FrameBuffer.h"
 
+using namespace std;
 class camera
 {
 public:
@@ -35,24 +41,26 @@ public:
         // Buffer
         FrameBuffer<color> color_buffer(image_width, image_height);
 
-        // Threads
-        vector<thread> threads;
-
         // Timer
         auto start = chrono::steady_clock::now();
 
         for (int j = 0; j < image_height; ++j)
         {
-            // Load Threads
-            threads.emplace_back(&camera::render_line, this, cref(world), j, color_buffer.data, cref(lights));
+            for (int i = 0; i < image_width; ++i)
+            {
+                futures.push(pool.Submit([this, i, j, &world, &lights, &color_buffer]
+                                         { render_pixel(i, j, world, lights, color_buffer.data); }));
+            }
         }
 
-        thread thread_indicator(threading::threading_indicator, image_height);
+        thread thread_indicator(&camera::pixel_indicator, this, image_height * image_width);
         thread_indicator.detach();
 
-        for (int j = 0; j < image_height; ++j)
-            if (threads[j].joinable())
-                threads[j].join();
+        while (!futures.empty())
+        {
+            futures.front().get();
+            futures.pop();
+        }
 
         auto trace_end = chrono::steady_clock::now();
         auto tracing_time = chrono::duration_cast<chrono::seconds>(trace_end - start);
@@ -76,7 +84,7 @@ public:
         {
             for (int i = 0; i < comp; ++i)
             {
-                int val = static_cast<int>(255.99 * interval(0.000, 0.999).clamp(linear2gamma(c.e[i] / samplers_per_pixel)));
+                int val = static_cast<int>(255.99 * (interval(0.000, 0.999)).clamp(linear2gamma(c.e[i] / samplers_per_pixel)));
                 p[i] = static_cast<unsigned char>(val);
             }
             return;
@@ -88,10 +96,6 @@ public:
         auto rendering_time = chrono::duration_cast<chrono::seconds>(transfer_end - start);
 
         std::clog << "Data Transfer Completed. Total Rendering Time: " << rendering_time.count() << 's' << endl;
-
-        // Releasing resource
-        threads.clear();
-        // delete[] image_data;
     }
 
 private:
@@ -105,6 +109,11 @@ private:
     vec3 defocus_disk_v; // Defocus disk vertical radius
     int sqrt_spp;        // Subpixel var for pixel sample stratifying
     double stride_spp;   // Stride of subpixel stratifying
+
+    // Use for multi-threading
+    ThreadPool pool;
+    queue<future<void>> futures;
+    atomic<int> pixel_finished = 0;
 
     void initialize()
     {
@@ -222,26 +231,30 @@ private:
         }
     }
 
-    // Funcs for MultiThreading (each thread handle a line)
-    void render_line(const hittable &world, int index_row, color **const buffer, const hittable &lights)
+    void render_pixel(int i, int j, const hittable &world, const hittable &lights, color **const buffer)
     {
-        for (int i = 0; i < image_width; ++i)
+        color pixel_color(0, 0, 0);
+
+        for (int s_i = 0; s_i < sqrt_spp; ++s_i)
         {
-            color pixel_color(0, 0, 0);
-
-            for (int s_i = 0; s_i < sqrt_spp; ++s_i)
+            for (int s_j = 0; s_j < sqrt_spp; ++s_j)
             {
-                for (int s_j = 0; s_j < sqrt_spp; ++s_j)
-                {
-                    ray r = get_primary_ray(index_row, i, s_i, s_j);
-                    pixel_color += ray_color(r, world, max_depth, lights);
-                }
+                ray r = get_primary_ray(i, j, s_i, s_j);
+                pixel_color += ray_color(r, world, max_depth, lights);
             }
-
-            // Write all color into buffer
-            buffer[index_row][i] = pixel_color;
         }
 
-        ++threading::thread_finished;
+        // Write all color into buffer
+        buffer[i][j] = pixel_color;
+        ++pixel_finished;
+    }
+
+    void pixel_indicator(int total_pixels)
+    {
+        while (pixel_finished < total_pixels)
+        {
+            clog << "\rPixels Rendered: " << pixel_finished << " / " << total_pixels << flush;
+            this_thread::sleep_for(chrono::milliseconds(500));
+        }
     }
 };

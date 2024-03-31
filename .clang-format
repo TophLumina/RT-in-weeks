@@ -1,0 +1,16 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+UseTab: Never
+BreakBeforeBraces: Allman
+
+AllowShortIfStatementsOnASingleLine: false
+
+IndentCaseLabels: false
+IndentPPDirectives: BeforeHash
+NamespaceIndentation: Inner
+
+AlignTrailingComments: true
+
+AccessModifierOffset: -4
+
+ColumnLimit: 0
