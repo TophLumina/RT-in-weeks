@@ -14,7 +14,7 @@ public:
         normal = normalize(n);
         D = dot(normal, Q);
         w = n / dot(n, n);
-        area = n.length();
+        area = length(n);
 
         set_bounding_box();
     }
@@ -77,8 +77,8 @@ public:
         if (!this->hit(ray(origin, v), interval(0.001, infinity), hit))
             return 0;
 
-        auto distance_squared = hit.t * hit.t * v.length_squared();
-        auto cosine = fabs(dot(v, hit.normal) / v.length());
+        auto distance_squared = hit.t * hit.t * squared_length(v);
+        auto cosine = fabs(dot(v, hit.normal) / length(v));
 
         return distance_squared / (cosine * area);
     }
@@ -106,19 +106,19 @@ inline shared_ptr<hittable_list> cube(const point3 &a, const point3 &b, shared_p
     auto faces = make_shared<hittable_list>();
 
     // Construct the two opposite vertices
-    auto min = point3(fmin(a.x(), b.x()), fmin(a.y(), b.y()), fmin(a.z(), b.z()));
-    auto max = point3(fmax(a.x(), b.x()), fmax(a.y(), b.y()), fmax(a.z(), b.z()));
+    auto min = point3(fmin(a.x, b.x), fmin(a.y, b.y), fmin(a.z, b.z));
+    auto max = point3(fmax(a.x, b.x), fmax(a.y, b.y), fmax(a.z, b.z));
 
-    auto dx = vec3(max.x() - min.x(), 0, 0);
-    auto dy = vec3(0, max.y() - min.y(), 0);
-    auto dz = vec3(0, 0, max.z() - min.z());
+    auto dx = vec3(max.x - min.x, 0, 0);
+    auto dy = vec3(0, max.y - min.y, 0);
+    auto dz = vec3(0, 0, max.z - min.z);
 
-    faces->add(make_shared<quad>(point3(min.x(), min.y(), max.z()), dx, dy, mat));  // front
-    faces->add(make_shared<quad>(point3(max.x(), min.y(), max.z()), -dz, dy, mat)); // right
-    faces->add(make_shared<quad>(point3(max.x(), min.y(), min.z()), -dx, dy, mat)); // back
-    faces->add(make_shared<quad>(point3(min.x(), min.y(), min.z()), dz, dy, mat));  // left
-    faces->add(make_shared<quad>(point3(min.x(), max.y(), max.z()), dx, -dz, mat)); // top
-    faces->add(make_shared<quad>(point3(min.x(), min.y(), min.z()), dx, dz, mat));  // bottom
+    faces->add(make_shared<quad>(point3(min.x, min.y, max.z), dx, dy, mat));  // front
+    faces->add(make_shared<quad>(point3(max.x, min.y, max.z), -dz, dy, mat)); // right
+    faces->add(make_shared<quad>(point3(max.x, min.y, min.z), -dx, dy, mat)); // back
+    faces->add(make_shared<quad>(point3(min.x, min.y, min.z), dz, dy, mat));  // left
+    faces->add(make_shared<quad>(point3(min.x, max.y, max.z), dx, -dz, mat)); // top
+    faces->add(make_shared<quad>(point3(min.x, min.y, min.z), dx, dz, mat));  // bottom
 
     return faces;
 }

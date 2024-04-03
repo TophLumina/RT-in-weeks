@@ -14,9 +14,9 @@ public:
     aabb(const point3 &a, const point3 &b)
     // two points serve as extrema for the bounding box
     {
-        x = interval(fmin(a.e[0], b.e[0]), fmax(a.e[0], b.e[0]));
-        y = interval(fmin(a.e[1], b.e[1]), fmax(a.e[1], b.e[1]));
-        z = interval(fmin(a.e[2], b.e[2]), fmax(a.e[2], b.e[2]));
+        x = interval(fmin(a.x, b.x), fmax(a.x, b.x));
+        y = interval(fmin(a.y, b.y), fmax(a.y, b.y));
+        z = interval(fmin(a.z, b.z), fmax(a.z, b.z));
     }
 
     aabb(const aabb &a, const aabb &b)
@@ -74,7 +74,7 @@ public:
 
 inline aabb operator+(const aabb &bbox, const vec3 &offset)
 {
-    return aabb(bbox.x + offset.x(), bbox.y + offset.y(), bbox.z + offset.z());
+    return aabb(bbox.x + offset.x, bbox.y + offset.y, bbox.z + offset.z);
 }
 
 inline aabb operator+(const vec3 &offset, const aabb &bbox)

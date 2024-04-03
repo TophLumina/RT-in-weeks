@@ -35,7 +35,7 @@ public:
         hit_in.t = hit_in.t < 0 ? 0 : hit_in.t;
 
         // Scatting distance
-        auto ray_len = r.direction().length();
+        auto ray_len = length(r.direction());
         auto dist_inside_boundary = (hit_out.t - hit_in.t) * ray_len;
         auto hit_dist = neg_inv_density * log(random_double());
 
@@ -43,7 +43,7 @@ public:
             return false;
 
         // Scatting confirmed
-        hit.t = hit_in.t + dist_inside_boundary / r.direction().length();
+        hit.t = hit_in.t + dist_inside_boundary / length(r.direction());
         hit.hit_point = r.at(hit.t);
 
         hit.normal = vec3(1, 0, 0); // arbitrary

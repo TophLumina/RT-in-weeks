@@ -2,6 +2,7 @@
 
 #include "hittable.h"
 #include "vec3.h"
+#include "ONB.h"
 
 class sphere : public hittable
 {
@@ -28,9 +29,9 @@ public:
     {
         point3 center = is_moving ? sphere::center(r.time()) : center0;
         vec3 oc = r.origin() - center;
-        auto a = r.direction().length_squared();
+        auto a = squared_length(r.direction());
         auto half_b = dot(r.direction(), oc);
-        auto c = oc.length_squared() - radius * radius;
+        auto c = squared_length(oc) - radius * radius;
 
         auto discriminant = half_b * half_b - a * c;
         if (discriminant < 0)
@@ -69,7 +70,7 @@ public:
         if (!this->hit(ray(origin, v), interval(0.001, infinity), hit))
             return 0;
 
-        auto cos_theta_max = sqrt(1 - pow(radius, 2) / (center0 - origin).length_squared());
+        auto cos_theta_max = sqrt(1 - pow(radius, 2) / squared_length(center0 - origin));
         auto solid_angle = 2 * PI * (1 - cos_theta_max);
 
         return 1 / solid_angle;
@@ -78,7 +79,7 @@ public:
     vec3 random(const point3 &origin) const override
     {
         vec3 dir = center0 - origin;
-        auto dist_squared = dir.length_squared();
+        auto dist_squared = squared_length(dir);
         onb coord;
         coord.build_from_w(dir);
         return coord.local(random2sphere(radius, dist_squared));
@@ -106,8 +107,8 @@ private:
         //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
         //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
 
-        auto theta = acos(-p.y());
-        auto phi = atan2(-p.z(), p.x()) + PI;
+        auto theta = acos(-p.y);
+        auto phi = atan2(-p.z, p.x) + PI;
 
         u = phi / (2 * PI);
         v = theta / PI;

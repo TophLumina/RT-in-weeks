@@ -83,7 +83,7 @@ public:
         {
             for (int i = 0; i < comp; ++i)
             {
-                int val = static_cast<int>(255.99 * (interval(0.000, 0.999)).clamp(linear2gamma(c.e[i] / samplers_per_pixel)));
+                int val = static_cast<int>(255.99 * (interval(0.000, 0.999)).clamp(Math::linear2gamma(c[i] / samplers_per_pixel)));
                 p[i] = static_cast<unsigned char>(val);
             }
             return;
@@ -166,7 +166,7 @@ private:
     // Return a random point in the camera defocus disk
     point3 defocus_disk_sample() const
     {
-        auto p = random_in_unit_disk();
+        auto p = random_disk();
         return center + p[0] * defocus_disk_u + p[1] * defocus_disk_v;
     }
 

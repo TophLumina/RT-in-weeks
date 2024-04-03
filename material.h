@@ -2,8 +2,8 @@
 
 #include "rtweekend.h"
 #include "texture.h"
-#include "ONB.h"
 #include "PDF.h"
+#include <memory>
 
 class scatter_info
 {
@@ -34,7 +34,7 @@ class lambertian : public material
 {
 public:
     lambertian(const shared_ptr<texture> _tex) : albedo(_tex) {}
-    lambertian(const color &c) : lambertian(make_shared<solid_color>(c)) {}
+    lambertian(const color &c) : albedo(make_shared<solid_color>(c)) {}
 
     bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {
@@ -60,7 +60,7 @@ class diffuse : public material
 {
 public:
     diffuse(const shared_ptr<texture> _tex) : albedo(_tex) {}
-    diffuse(const color &c) : diffuse(make_shared<solid_color>(c)) {}
+    diffuse(const color &c) : albedo(make_shared<solid_color>(c)) {}
 
     bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {
@@ -84,7 +84,7 @@ class metal : public material
 {
 public:
     metal(const shared_ptr<texture> _tex, double f) : albedo(_tex), fuzz(f < 1 ? f : 1) {}
-    metal(const color &c, double f) : metal(make_shared<solid_color>(c), f) {}
+    metal(const color &c, double f) : albedo(make_shared<solid_color>(c)), fuzz(f < 1 ? f : 1) {}
 
     bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {
@@ -93,7 +93,7 @@ public:
         sinfo.no_pdf = true;
 
         vec3 reflected = reflect(normalize(r_in.direction()), hit.normal);
-        sinfo.ray_without_pdf = ray(hit.hit_point, reflected + fuzz * random_unit_vector(), r_in.time());
+        sinfo.ray_without_pdf = ray(hit.hit_point, reflected + fuzz * random_spherical_surface<3, double>(), r_in.time());
 
         return dot(sinfo.ray_without_pdf.direction(), hit.normal) > 0; // Ensure that fuzz_scattered ray comes out
     }
@@ -173,7 +173,7 @@ class isotropic : public material
 {
 public:
     isotropic(shared_ptr<texture> _tex) : albedo(_tex) {}
-    isotropic(color _col) : isotropic(make_shared<solid_color>(_col)) {}
+    isotropic(color c) : albedo(make_shared<solid_color>(c)) {}
 
     bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {

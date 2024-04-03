@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../structures.h"
 #include "../numeric/Numeric.hpp"
+#include "../numeric/Random.hpp"
+#include "../structures.h"
 
 
 MATH_NAMESPACE_BEGIN
@@ -24,7 +25,7 @@ static MATH_FUNCTION_QUALIFIERS vec<N, T> random_range(vec<N, T> const &min, vec
     vec<N, T> result;
     for (LENGTH_TYPE i = 0; i < N; ++i)
     {
-        result[i] = random_range(min[i], max[i]);
+        result[i] = Math::random_range(min[i], max[i]);
     }
     return result;
 }
@@ -35,7 +36,7 @@ static MATH_FUNCTION_QUALIFIERS vec<N, T> min(vec<N, T> const &v, vec<N, T> cons
     vec<N, T> result;
     for (LENGTH_TYPE i = 0; i < N; ++i)
     {
-        result[i] = min(v[i], u[i]);
+        result[i] = Math::min(v[i], u[i]);
     }
     return result;
 }
@@ -46,7 +47,7 @@ static MATH_FUNCTION_QUALIFIERS vec<N, T> max(vec<N, T> const &v, vec<N, T> cons
     vec<N, T> result;
     for (LENGTH_TYPE i = 0; i < N; ++i)
     {
-        result[i] = max(v[i], u[i]);
+        result[i] = Math::max(v[i], u[i]);
     }
     return result;
 }
@@ -57,7 +58,7 @@ static MATH_FUNCTION_QUALIFIERS vec<N, T> floor(vec<N, T> const &v)
     vec<N, T> result;
     for (LENGTH_TYPE i = 0; i < N; ++i)
     {
-        result[i] = floor(v[i]);
+        result[i] = Math::floor(v[i]);
     }
     return result;
 }
@@ -68,7 +69,7 @@ static MATH_FUNCTION_QUALIFIERS vec<N, T> ceil(vec<N, T> const &v)
     vec<N, T> result;
     for (LENGTH_TYPE i = 0; i < N; ++i)
     {
-        result[i] = ceil(v[i]);
+        result[i] = Math::ceil(v[i]);
     }
     return result;
 }
@@ -79,7 +80,7 @@ static MATH_FUNCTION_QUALIFIERS vec<N, T> round(vec<N, T> const &v)
     vec<N, T> result;
     for (LENGTH_TYPE i = 0; i < N; ++i)
     {
-        result[i] = round(v[i]);
+        result[i] = Math::round(v[i]);
     }
     return result;
 }
@@ -116,7 +117,7 @@ static MATH_FUNCTION_QUALIFIERS vec<N, T> clamp(vec<N, T> const &v, vec<N, T> co
     vec<N, T> result;
     for (LENGTH_TYPE i = 0; i < N; ++i)
     {
-        result[i] = clamp(v[i], min[i], max[i]);
+        result[i] = Math::clamp(v[i], min[i], max[i]);
     }
     return result;
 }
@@ -127,7 +128,7 @@ static MATH_FUNCTION_QUALIFIERS vec<N, T> saturate(vec<N, T> const &v)
     vec<N, T> result;
     for (LENGTH_TYPE i = 0; i < N; ++i)
     {
-        result[i] = saturate(v[i]);
+        result[i] = Math::saturate(v[i]);
     }
     return result;
 }
@@ -139,7 +140,7 @@ static MATH_FUNCTION_QUALIFIERS vec<N, T> linear_lerp(vec<N, T> const &v, vec<N,
     vec<N, T> result;
     for (LENGTH_TYPE i = 0; i < N; ++i)
     {
-        result[i] = linear_lerp(v[i], u[i], a[i]);
+        result[i] = Math::linear_lerp(v[i], u[i], a[i]);
     }
     return result;
 }
@@ -150,7 +151,7 @@ static MATH_FUNCTION_QUALIFIERS vec<N, T> quadratic_lerp(vec<N, T> const &v, vec
     vec<N, T> result;
     for (LENGTH_TYPE i = 0; i < N; ++i)
     {
-        result[i] = quadratic_lerp(v[i], u[i], a[i]);
+        result[i] = Math::quadratic_lerp(v[i], u[i], a[i]);
     }
     return result;
 }
@@ -161,7 +162,7 @@ static MATH_FUNCTION_QUALIFIERS vec<N, T> cubic_lerp(vec<N, T> const &v, vec<N, 
     vec<N, T> result;
     for (LENGTH_TYPE i = 0; i < N; ++i)
     {
-        result[i] = cubic_lerp(v[i], u[i], a[i]);
+        result[i] = Math::cubic_lerp(v[i], u[i], a[i]);
     }
     return result;
 }

@@ -9,7 +9,7 @@ public:
     {
         ranvec = new vec3[point_count];
         for (int i = 0; i < point_count; ++i)
-            ranvec[i] = normalize(vec3::random(-1, 1));
+            ranvec[i] = normalize(random_range(vec3{-1,-1,-1}, vec3{1,1,1}));
 
         perm_x = perlin_generate_perm();
         perm_y = perlin_generate_perm();
@@ -26,13 +26,13 @@ public:
 
     double noise(const point3 &p) const
     {
-        auto frac_i = p.x() - floor(p.x());
-        auto frac_j = p.y() - floor(p.y());
-        auto frac_k = p.z() - floor(p.z());
+        auto frac_i = p.x - floor(p.x);
+        auto frac_j = p.y - floor(p.y);
+        auto frac_k = p.z - floor(p.z);
 
-        auto i = static_cast<int>(floor(p.x()));
-        auto j = static_cast<int>(floor(p.y()));
-        auto k = static_cast<int>(floor(p.z()));
+        auto i = static_cast<int>(floor(p.x));
+        auto j = static_cast<int>(floor(p.y));
+        auto k = static_cast<int>(floor(p.z));
         vec3 c[2][2][2];
 
         for (int di = 0; di < 2; ++di)

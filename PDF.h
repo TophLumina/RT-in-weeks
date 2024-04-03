@@ -28,7 +28,7 @@ public:
 
     vec3 generate() const override
     {
-        return random_unit_vector();
+        return random_spherical_surface();
     }
 };
 
@@ -44,7 +44,7 @@ public:
 
     vec3 generate() const override
     {
-        return random_on_hemisphere(normal);
+        return random_hemisphere_surface(normal);
     }
 private:
     vec3 normal;
@@ -57,7 +57,7 @@ public:
 
     double value(const vec3 &direction) const override
     {
-        auto cos_theta = dot(normalize(direction), coord.w());
+        auto cos_theta = dot(normalize(direction), coord.w);
         return fmax(0.0, cos_theta / PI);
     }
 
