@@ -14,8 +14,8 @@
 
 #include <stdlib.h>
 #include <iostream>
-
 #include <functional>
+
 #include "FrameBuffer.h"
 
 class rtw_image

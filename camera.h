@@ -7,7 +7,6 @@
 #include <queue>
 #include <thread>
 
-
 #include "FrameBuffer.h"
 #include "PDF.h"
 #include "ThreadPool.hpp"
@@ -64,7 +63,7 @@ public:
 
         auto trace_end = chrono::steady_clock::now();
         auto tracing_time = chrono::duration_cast<chrono::seconds>(trace_end - start);
-        clog << "\rTracing Completed. Ray Tracing Time: " << tracing_time.count() << "s" << endl;
+        clog << "\rTracing Completed. Tracing Time: " << tracing_time.count() << "s" << endl;
 
         // // PPM output
         // cout
