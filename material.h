@@ -48,7 +48,7 @@ public:
     double scattering_pdf(const ray &r_in, const hit_info &hit, const ray &scatted) const override
     {
         auto cos_theta = dot(hit.normal, normalize(scatted.direction()));
-        return cos_theta < 0 ? 0 : cos_theta / PI;
+        return cos_theta < 0 ? 0 : cos_theta / Math::M_PI;
     }
 
 private:
@@ -73,7 +73,7 @@ public:
 
     double scattering_pdf(const ray &r_in, const hit_info &hit, const ray &scatted) const override
     {
-        return 1 / (2.0 * PI);
+        return 1 / (2.0 * Math::M_PI);
     }
 
 private:
@@ -187,7 +187,7 @@ public:
     // Samplers follow uniform distribution on sphere
     double scattering_pdf(const ray &r_in, const hit_info &hit, const ray &scatted) const override
     {
-        return 1.0 / (4.0 * PI);
+        return 1.0 / (4.0 * Math::M_PI);
     }
 
 private:

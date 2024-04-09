@@ -71,7 +71,7 @@ public:
             return 0;
 
         auto cos_theta_max = sqrt(1 - pow(radius, 2) / squared_length(center0 - origin));
-        auto solid_angle = 2 * PI * (1 - cos_theta_max);
+        auto solid_angle = 2 * Math::M_PI * (1 - cos_theta_max);
 
         return 1 / solid_angle;
     }
@@ -108,10 +108,10 @@ private:
         //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
 
         auto theta = acos(-p.y);
-        auto phi = atan2(-p.z, p.x) + PI;
+        auto phi = atan2(-p.z, p.x) + Math::M_PI;
 
-        u = phi / (2 * PI);
-        v = theta / PI;
+        u = phi / (2 * Math::M_PI);
+        v = theta / Math::M_PI;
     }
 
     static vec3 random2sphere(double radius, double dist_squared)
@@ -120,7 +120,7 @@ private:
         auto r2 = random_double();
         auto z = 1 + r2 * (sqrt(1 - pow(radius, 2) / dist_squared) - 1);
 
-        auto phi = 2 * PI * r1;
+        auto phi = 2 * Math::M_PI * r1;
         auto x = cos(phi) * sqrt(1 - pow(z, 2));
         auto y = sin(phi) * sqrt(1 - pow(z, 2));
 

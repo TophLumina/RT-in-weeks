@@ -23,7 +23,7 @@ public:
 
     double value(const vec3 &direction) const override
     {
-        return 1.0 / (4.0 * PI);
+        return 1.0 / (4.0 * Math::M_PI);
     }
 
     vec3 generate() const override
@@ -39,7 +39,7 @@ public:
 
     double value(const vec3 &direction) const override
     {
-        return 1.0 / (2.0 * PI);
+        return 1.0 / (2.0 * Math::M_PI);
     }
 
     vec3 generate() const override
@@ -58,7 +58,7 @@ public:
     double value(const vec3 &direction) const override
     {
         auto cos_theta = dot(normalize(direction), coord.w);
-        return fmax(0.0, cos_theta / PI);
+        return fmax(0.0, cos_theta / Math::M_PI);
     }
 
     vec3 generate() const override
