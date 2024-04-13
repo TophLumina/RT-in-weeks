@@ -99,7 +99,7 @@ class mixture_pdf : public pdf
 {
 public:
     // Require the same number of pdfs and weights if not default to 1.0 / num_pdfs
-    mixture_pdf<Args...>(std::vector<double> _weights = std::vector<double>(), Args... args)
+    mixture_pdf(std::vector<double> _weights = std::vector<double>(), Args... args)
     {
         src_pdfs = {args...};
         if (_weights.size() != src_pdfs.size())
