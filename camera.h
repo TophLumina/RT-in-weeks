@@ -65,18 +65,6 @@ public:
         auto tracing_time = chrono::duration_cast<chrono::seconds>(trace_end - start);
         clog << "\rTracing Completed. Tracing Time: " << tracing_time.count() << "s" << endl;
 
-        // // PPM output
-        // cout
-        //     << "P3\n"
-        //     << image_width << ' ' << image_height << "\n255\n";
-        // for (int i = 0; i < image_height; ++i)
-        // {
-        //     for (int j = 0; j < image_width; ++j)
-        //     {
-        //         write_color(cout, color_buffer.data[i][j], samplers_per_pixel);
-        //     }
-        // }
-
         // PNG output
         int comp = 3;
         function<void(color, unsigned char *)> trans = [&](color c, unsigned char *p) -> void
@@ -89,6 +77,7 @@ public:
             return;
         };
         rtw_image image(color_buffer, comp, trans);
+        image.saveasPPM("./result.ppm");
         image.saveasPNG("./result.png");
 
         auto transfer_end = chrono::steady_clock::now();
@@ -109,7 +98,7 @@ private:
     int sqrt_spp;        // Subpixel var for pixel sample stratifying
     double stride_spp;   // Stride of subpixel stratifying
 
-    // Use for multi-threading
+    // Thread Pool
     ThreadPool pool;
     queue<future<void>> futures;
     atomic<int> pixel_finished = 0;
@@ -205,7 +194,7 @@ private:
                 if (sinfo.no_pdf)
                     return sinfo.attenuation * ray_color(sinfo.ray_without_pdf, world, current_depth, lights);
 
-                // TODO need to implement additional shadow rays here
+                // TODO:: swich to shadow rays
 
                 auto light_pdf = make_shared<hittable_pdf>(lights, hit.hit_point);
                 mixture_pdf mixed_pdf(light_pdf, sinfo.pdf_ptr, 0.25);
@@ -248,6 +237,7 @@ private:
         ++pixel_finished;
     }
 
+    // Indicator for pixel rendering progress
     void pixel_indicator(int total_pixels)
     {
         while (pixel_finished < total_pixels)

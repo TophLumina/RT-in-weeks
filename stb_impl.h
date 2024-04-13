@@ -12,9 +12,9 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "external/stb_image_write.h"
 
-#include <stdlib.h>
 #include <iostream>
 #include <functional>
+#include <fstream>
 
 #include "FrameBuffer.h"
 
@@ -59,10 +59,27 @@ public:
             std::cerr << "ERROR:: IMAGE TO PNG FAILED." << std::endl;
     }
 
-    // TODO:: support PPM image in camera class.
     void saveasPPM(std::string filename) const
     {
-        
+        std::fstream file(filename, std::ios::out);
+
+        if (!file.is_open())
+        {
+            std::cerr << "ERROR:: IMAGE TO PPM FAILED." << std::endl;
+        }
+        else
+        {
+            file << "P3\n"
+                 << image_width << ' ' << image_height << "\n255\n";
+            for (int i = 0; i < image_height; ++i)
+            {
+                for (int j = 0; j < image_width; ++j)
+                {
+                    auto pixel = pixel_data(j, i);
+                    file << static_cast<int>(pixel[0]) << ' ' << static_cast<int>(pixel[1]) << ' ' << static_cast<int>(pixel[2]) << '\n';
+                }
+            }
+        }
     }
 
     int width() const { return data == nullptr ? 0 : image_width; }
