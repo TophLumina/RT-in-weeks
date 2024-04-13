@@ -1,8 +1,10 @@
 #pragma once
 
-#include "rtweekend.h"
 #include "ONB.h"
-#include "hittable_list.h"
+#include "rtweekend.h"
+#include <memory>
+#include <numeric>
+#include <vector>
 
 // Any pdf class(or subclass) should be able of
 // 1. Returning a random direction weighted by the internal PDF distribution
@@ -46,6 +48,7 @@ public:
     {
         return random_hemisphere_surface(normal);
     }
+
 private:
     vec3 normal;
 };
@@ -90,31 +93,49 @@ private:
     point3 origin;
 };
 
+// TODO:: use template to make it support variable number of pdfs
+template <typename... Args>
 class mixture_pdf : public pdf
 {
 public:
-    // when getting mixed_pdf value, it will follow by _mix_param * p0 + (1.0 - _mix_param) * p1
-    mixture_pdf(shared_ptr<pdf> p0, shared_ptr<pdf> p1, double _mix_param = 0.5)
+    // Require the same number of pdfs and weights if not default to 1.0 / num_pdfs
+    mixture_pdf<Args...>(std::vector<double> _weights = std::vector<double>(), Args... args)
     {
-        src_pdf[0] = p0;
-        src_pdf[1] = p1;
-        mix_param = std::max(std::min(1.0, _mix_param), 0.0); // clamp to [0.0, 1.0]
+        src_pdfs = {args...};
+        if (_weights.size() != src_pdfs.size())
+            weights = std::vector<double>(src_pdfs.size(), 1.0 / src_pdfs.size());
+        else
+            weights = _weights;
+        weight_sum = std::accumulate(weights.begin(), weights.end(), 0.0);
     }
 
     double value(const vec3 &direction) const override
     {
-        return mix_param * src_pdf[0]->value(direction) + (1.0 - mix_param) * src_pdf[1]->value(direction);
+        double result = 0.0;
+        for (int i = 0; i < src_pdfs.size(); i++)
+        {
+            result += weights[i] * src_pdfs[i]->value(direction);
+        }
+        return result;
     }
 
     vec3 generate() const override
     {
-        if (random_double() < mix_param)
-            return src_pdf[0]->generate();
-        else
-            return src_pdf[1]->generate();
+        double random_num = random_double() * weight_sum;
+        double sum = 0.0;
+        for (int i = 0; i < src_pdfs.size(); i++)
+        {
+            sum += weights[i];
+            if (sum > random_num)
+            {
+                return src_pdfs[i]->generate();
+            }
+        }
+        return src_pdfs.back()->generate();
     }
 
 private:
-    shared_ptr<pdf> src_pdf[2];
-    double mix_param;
+    std::vector<std::shared_ptr<pdf>> src_pdfs;
+    std::vector<double> weights;
+    double weight_sum;
 };

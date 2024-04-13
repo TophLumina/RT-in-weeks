@@ -20,9 +20,7 @@ inline double degree2radius(double degrees) { return degrees / 180.0 * Math::M_P
 // Return a real in [0, 1)
 inline double random_double()
 {
-    static std::mt19937 generator(std::random_device{}());
-    static std::uniform_real_distribution<> distribution(0.0, 1.0);
-    return distribution(generator);
+    return Math::random_range<double>(0.0, 1.0);
 }
 
 // Return a real in [min, max)

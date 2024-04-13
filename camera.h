@@ -160,10 +160,10 @@ private:
     }
 
     // Return a randomly sampled ray for pixel i, j and given subpixel indexes, originating from the camera defocus disk
-    ray get_primary_ray(int i, int j, int sub_i, int sub_j) const
+    ray get_primary_ray(int i, int j, int sub_i = 0, int sub_j = 0) const
     {
         auto pixel_center = pixel00_pos + (j * pixel_delta_u) + (i * pixel_delta_v);
-        auto pixel_sample = pixel_center + pixel_sample_square(sub_i, sub_j);
+        auto pixel_sample = pixel_center + ((sub_i == 0 && sub_j == 0) ? vec3(0, 0, 0) : pixel_sample_square(sub_i, sub_j));
 
         auto ray_origin = defocus_angle <= 0 ? center : defocus_disk_sample();
 
@@ -194,10 +194,10 @@ private:
                 if (sinfo.no_pdf)
                     return sinfo.attenuation * ray_color(sinfo.ray_without_pdf, world, current_depth, lights);
 
-                // TODO:: swich to shadow rays
+                // TODO:: need 
 
                 auto light_pdf = make_shared<hittable_pdf>(lights, hit.hit_point);
-                mixture_pdf mixed_pdf(light_pdf, sinfo.pdf_ptr, 0.25);
+                mixture_pdf mixed_pdf(vector<double>{0.25, 0.75}, light_pdf, sinfo.pdf_ptr);
 
                 ray scattered = ray(hit.hit_point, mixed_pdf.generate(), r.time());
                 auto pdf_val = mixed_pdf.value(scattered.direction());
