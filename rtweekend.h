@@ -31,7 +31,7 @@ inline int random_int(int min, int max) { return static_cast<int>(random_double(
 
 // Headers
 #include "color.h"
+#include "ray.h"
 #include "hittable.h"
 #include "interval.h"
-#include "ray.h"
 #include "vec3.h"

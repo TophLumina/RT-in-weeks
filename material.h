@@ -1,9 +1,10 @@
 #pragma once
 
+#include "PDF.h"
 #include "rtweekend.h"
 #include "texture.h"
-#include "PDF.h"
 #include <memory>
+
 
 class scatter_info
 {
@@ -17,6 +18,9 @@ public:
 class material
 {
 public:
+    static unsigned int index; // For debugging and denoising
+
+    material() { ++index; }
     virtual ~material() = default;
 
     virtual color emitter(const ray &r_in, const hit_info &hit, double u, double v, const point3 &p) const
@@ -24,10 +28,12 @@ public:
         return color(0, 0, 0);
     }
 
-    virtual bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const = 0;
+    virtual bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const { return false; };
 
     virtual double scattering_pdf(const ray &r_in, const hit_info &hit, const ray &scatted) const { return 0; }
 };
+
+unsigned int material::index = 1; // 0 is reserved for the background
 
 // Diffuse material scattering weighted by cos(theta)
 class lambertian : public material

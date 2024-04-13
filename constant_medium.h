@@ -42,6 +42,9 @@ public:
         if (hit_dist > dist_inside_boundary)
             return false;
 
+        // hittable index
+        hit.hittable_index = boundary->index;
+        
         // Scatting confirmed
         hit.t = hit_in.t + dist_inside_boundary / length(r.direction());
         hit.hit_point = r.at(hit.t);

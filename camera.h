@@ -1,17 +1,21 @@
 #pragma once
 
-#include "rtweekend.h"
 #include <atomic>
 #include <chrono>
+#include <cstdlib>
+#include <functional>
 #include <future>
+#include <iostream>
 #include <queue>
 #include <thread>
 
+#include "rtweekend.h"
 #include "FrameBuffer.h"
 #include "PDF.h"
 #include "ThreadPool.hpp"
 #include "hittable_list.h"
 #include "material.h"
+#include "denoiser.h"
 
 using namespace std;
 class camera
@@ -33,12 +37,18 @@ public:
 
     color background = color(0, 0, 0); // Scene background color (more like env light actually, could add HDRI or cube_map support someday)
 
+    // Buffers
+    FrameBuffer<color> color_buffer;
+    FrameBuffer<point3> position_buffer;
+    FrameBuffer<vec3> normal_buffer;
+    FrameBuffer<vec3> info_buffer;
+
+    // Denoiser
+    Denoiser denoiser = Denoiser(2);
+
     void render(const hittable &world, const hittable &lights)
     {
         initialize();
-
-        // Buffer
-        FrameBuffer<color> color_buffer(image_width, image_height);
 
         // Timer
         auto start = chrono::steady_clock::now();
@@ -47,7 +57,7 @@ public:
         {
             for (int i = 0; i < image_width; ++i)
             {
-                futures.push(pool.Submit([this, i, j, &world, &lights, &color_buffer]
+                futures.push(pool.Submit([this, i, j, &world, &lights]
                                          { render_pixel(i, j, world, lights, color_buffer.data); }));
             }
         }
@@ -76,9 +86,28 @@ public:
             }
             return;
         };
+
+        // Denoise
+        std::clog << "Generating G-buffers..." << endl;
+        generate_Gbuffers(world);
+        std::clog << "G-buffers Generated." << endl;
+
+        // G-buffers output
+        rtw_image raw_image(color_buffer, comp, trans);
+        raw_image.saveasPPM("./raw.ppm");
+
+        rtw_image gbuffer_position(position_buffer, comp, trans);
+        gbuffer_position.saveasPPM("./position.ppm");
+
+        rtw_image gbuffer_normal(normal_buffer, comp, trans);
+        gbuffer_normal.saveasPPM("./normal.ppm");
+
+        std::clog << "Denoising..." << endl;
+        denoiser.denoise(color_buffer, normal_buffer, info_buffer);
+        std::clog << "Denoising Completed." << endl;
+        
         rtw_image image(color_buffer, comp, trans);
         image.saveasPPM("./result.ppm");
-        image.saveasPNG("./result.png");
 
         auto transfer_end = chrono::steady_clock::now();
         auto rendering_time = chrono::duration_cast<chrono::seconds>(transfer_end - start);
@@ -141,6 +170,17 @@ private:
         // Subpixel stratifying
         sqrt_spp = static_cast<int>(sqrt(samplers_per_pixel));
         stride_spp = 1.0 / sqrt_spp;
+
+        // Buffers
+        color_buffer = FrameBuffer<color>(image_width, image_height, color(0, 0, 0), [](color a, color b)
+                                          { return abs(a.r - b.r) + abs(a.g + b.g) + abs(a.b - b.b); });
+        position_buffer = FrameBuffer<point3>(image_width, image_height, point3(0, 0, 0), [](point3 a, point3 b)
+                                              { return Math::Vector::squared_distance(a, b); });
+        normal_buffer = FrameBuffer<vec3>(image_width, image_height, vec3(0, 0, 0), [](vec3 a, vec3 b)
+                                          { return 1.0 - dot(a, b); });
+        info_buffer = FrameBuffer<vec3>(image_width, image_height, vec3(0, 0, 0), [](vec3 a, vec3 b)
+                                         { return ((a.x == b.x && a.y == b.y) ? 0 : 1) * abs(a.z - b.z); });
+        
     }
 
     // Return a random offset in the square around pixel, given two sub-pixel indexes
@@ -194,7 +234,7 @@ private:
                 if (sinfo.no_pdf)
                     return sinfo.attenuation * ray_color(sinfo.ray_without_pdf, world, current_depth, lights);
 
-                // TODO:: need 
+                // TODO:: need create a new branch for light sampling (Shadow Ray, Direct Lighting, etc.)
 
                 auto light_pdf = make_shared<hittable_pdf>(lights, hit.hit_point);
                 mixture_pdf mixed_pdf(vector<double>{0.25, 0.75}, light_pdf, sinfo.pdf_ptr);
@@ -244,6 +284,31 @@ private:
         {
             clog << "\rPixels Rendered: " << pixel_finished << " / " << total_pixels << flush;
             this_thread::sleep_for(chrono::milliseconds(500));
+        }
+    }
+
+    // Generate G-buffers for denoising
+    void generate_Gbuffers(const hittable& world)
+    {
+        for (int j = 0; j < image_height; ++j)
+        {
+            for (int i = 0; i < image_width; ++i)
+            {
+                ray primary_ray = get_primary_ray(i, j);
+                hit_info hit;
+                if (world.hit(primary_ray, interval(0.001, infinity), hit))
+                {
+                    position_buffer.data[i][j] = hit.hit_point;
+                    normal_buffer.data[i][j] = hit.normal;
+                    info_buffer.data[i][j] = vec3(hit.mat->index, hit.hittable_index, hit.t);
+                }
+                else
+                {
+                    position_buffer.data[i][j] = vec3(0, 0, 0);
+                    normal_buffer.data[i][j] = vec3(0, 0, 0);
+                    info_buffer.data[i][j] = vec3(0, 0, 0);
+                }
+            }
         }
     }
 };

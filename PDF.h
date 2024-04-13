@@ -103,9 +103,13 @@ public:
     {
         src_pdfs = {args...};
         if (_weights.size() != src_pdfs.size())
+        {
             weights = std::vector<double>(src_pdfs.size(), 1.0 / src_pdfs.size());
+        }
         else
+        {
             weights = _weights;
+        }
         weight_sum = std::accumulate(weights.begin(), weights.end(), 0.0);
     }
 
@@ -116,7 +120,7 @@ public:
         {
             result += weights[i] * src_pdfs[i]->value(direction);
         }
-        return result;
+        return result / weight_sum;
     }
 
     vec3 generate() const override

@@ -48,6 +48,8 @@ public:
                 return false;
         }
 
+        // Hit confirm, fill the hit_info
+        hit.hittable_index = index;
         hit.t = root;
         hit.hit_point = r.at(hit.t);
         vec3 outward_normal = (hit.hit_point - center) / radius;

@@ -1,8 +1,12 @@
 #pragma once
 
-#include "rtweekend.h"
-#include "ray.h"
 #include "aabb.h"
+#include "ray.h"
+#include "rtweekend.h"
+
+
+#include <memory>
+
 
 class material;
 
@@ -12,6 +16,7 @@ public:
     point3 hit_point;
     vec3 normal;
     shared_ptr<material> mat;
+    unsigned int hittable_index; // For debugging and denoising
     double t;
     double u;
     double v;
@@ -29,6 +34,9 @@ public:
 class hittable
 {
 public:
+    static unsigned int index;  // For debugging and denoising
+
+    hittable() { ++index; }
     virtual ~hittable() = default;
     virtual bool hit(const ray &r, interval ray_t, hit_info &hit) const = 0;
     virtual aabb bounding_box() const = 0;
@@ -36,6 +44,8 @@ public:
     virtual double pdf_value(const point3 &origin, const vec3 &v) const { return 0.0; }
     virtual vec3 random(const vec3 &origin) const { return vec3(1, 0, 0); }
 };
+
+unsigned int hittable::index = 1; // 0 is reserved for the background
 
 class translate : public hittable
 {

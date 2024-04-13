@@ -63,6 +63,7 @@ public:
             return false;
 
         // Hit confirm, fill the hit_info
+        hit.hittable_index = index;
         hit.t = t;
         hit.hit_point = p;
         hit.mat = mat;
