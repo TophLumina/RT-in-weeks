@@ -10,11 +10,11 @@ public:
     unsigned int width;
     unsigned int height;
     T **data;
-    std::function<double(T, T)> diff = [](T a, T b) { return 0; };  // only used for the denoiser
+    std::function<double(const T&, const T&)> diff;  // only used for the denoiser
 
     FrameBuffer() : width(0), height(0), data(nullptr) {}
 
-    FrameBuffer(unsigned int width, unsigned int height, T value = T(), std::function<double(T, T)> diff = [](T a, T b) { return 0; }) : width(width), height(height), diff(diff)
+    FrameBuffer(unsigned int width, unsigned int height, T value = T(), std::function<double(const T&, const T&)> diff = [](const T& a, const T& b)-> double {return 0;}) : width(width), height(height), diff(diff)
     {
         data = new T *[height];
         for (int i = 0; i < height; ++i)

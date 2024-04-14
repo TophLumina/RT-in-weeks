@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cmath>
 #include <cstdlib>
 #include <functional>
 #include <future>
@@ -9,13 +10,13 @@
 #include <queue>
 #include <thread>
 
-#include "rtweekend.h"
 #include "FrameBuffer.h"
 #include "PDF.h"
 #include "ThreadPool.hpp"
+#include "denoiser.h"
 #include "hittable_list.h"
 #include "material.h"
-#include "denoiser.h"
+#include "rtweekend.h"
 
 using namespace std;
 class camera
@@ -41,10 +42,10 @@ public:
     FrameBuffer<color> color_buffer;
     FrameBuffer<point3> position_buffer;
     FrameBuffer<vec3> normal_buffer;
-    FrameBuffer<vec3> info_buffer;
+    FrameBuffer<vec3> index_buffer;
 
     // Denoiser
-    Denoiser denoiser = Denoiser(2);
+    Denoiser denoiser = Denoiser(4, 64);
 
     void render(const hittable &world, const hittable &lights)
     {
@@ -103,9 +104,9 @@ public:
         gbuffer_normal.saveasPPM("./normal.ppm");
 
         std::clog << "Denoising..." << endl;
-        denoiser.denoise(color_buffer, normal_buffer, info_buffer);
+        denoiser.denoise(color_buffer, position_buffer, normal_buffer, index_buffer);
         std::clog << "Denoising Completed." << endl;
-        
+
         rtw_image image(color_buffer, comp, trans);
         image.saveasPPM("./result.ppm");
 
@@ -172,15 +173,13 @@ private:
         stride_spp = 1.0 / sqrt_spp;
 
         // Buffers
-        color_buffer = FrameBuffer<color>(image_width, image_height, color(0, 0, 0), [](color a, color b)
-                                          { return abs(a.r - b.r) + abs(a.g + b.g) + abs(a.b - b.b); });
-        position_buffer = FrameBuffer<point3>(image_width, image_height, point3(0, 0, 0), [](point3 a, point3 b)
-                                              { return Math::Vector::squared_distance(a, b); });
-        normal_buffer = FrameBuffer<vec3>(image_width, image_height, vec3(0, 0, 0), [](vec3 a, vec3 b)
-                                          { return 1.0 - dot(a, b); });
-        info_buffer = FrameBuffer<vec3>(image_width, image_height, vec3(0, 0, 0), [](vec3 a, vec3 b)
-                                         { return ((a.x == b.x && a.y == b.y) ? 0 : 1) * abs(a.z - b.z); });
-        
+        color_buffer = FrameBuffer<color>(image_width, image_height, color(0, 0, 0));
+        position_buffer = FrameBuffer<point3>(image_width, image_height, point3(0, 0, 0), [](const point3 &a, const point3 &b) -> double
+                                              { return Math::Vector::distance(a, b) / 10; });
+        normal_buffer = FrameBuffer<vec3>(image_width, image_height, vec3(0, 0, 0), [](const vec3 &a, const vec3 &b) -> double
+                                          { return (1.0 - Math::Vector::dot(a, b)); });
+        index_buffer = FrameBuffer<vec3>(image_width, image_height, vec3(0, 0, 0), [](const vec3 &a, const vec3 &b) -> double
+                                         { return (a.x == b.x && a.y == b.y) ? 0 : 1; });
     }
 
     // Return a random offset in the square around pixel, given two sub-pixel indexes
@@ -288,7 +287,7 @@ private:
     }
 
     // Generate G-buffers for denoising
-    void generate_Gbuffers(const hittable& world)
+    void generate_Gbuffers(const hittable &world)
     {
         for (int j = 0; j < image_height; ++j)
         {
@@ -300,13 +299,13 @@ private:
                 {
                     position_buffer.data[i][j] = hit.hit_point;
                     normal_buffer.data[i][j] = hit.normal;
-                    info_buffer.data[i][j] = vec3(hit.mat->index, hit.hittable_index, hit.t);
+                    index_buffer.data[i][j] = vec3(hit.mat->index, hit.hittable_index, 0);
                 }
                 else
                 {
                     position_buffer.data[i][j] = vec3(0, 0, 0);
                     normal_buffer.data[i][j] = vec3(0, 0, 0);
-                    info_buffer.data[i][j] = vec3(0, 0, 0);
+                    index_buffer.data[i][j] = vec3(0, 0, 0);
                 }
             }
         }

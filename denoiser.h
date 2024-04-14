@@ -5,7 +5,7 @@
 class Denoiser
 {
 public:
-    Denoiser(int kernel_size) : kernel_size(kernel_size) {}
+    Denoiser(double kernal_radius = 4, int samplers = 32) : kernal_radius(kernal_radius), samplers(samplers) {}
 
     template <typename... Args>
     void denoise(FrameBuffer<color> &src_color, const FrameBuffer<Args> &...buffers)
@@ -18,29 +18,23 @@ public:
             {
                 // For each pixel, search its neighbors and use it to weight the denoising
                 double weight_sum = 0;
-                for (int k = -kernel_size; k <= kernel_size; ++k)
-                {
-                    for (int l = -kernel_size; l <= kernel_size; ++l)
-                    {
-                        if (k == 0 && l == 0)
-                        {
-                            weight_sum += 1;
-                            continue;
-                        }
-                        
-                        int x = i + k;
-                        int y = j + l;
 
-                        if (x >= 0 && x < src_color.height && y >= 0 && y < src_color.width)
-                        {
-                            // Use the G-buffers to weight the denoising
-                            double weight = 0;
-                            (..., (weight += buffers.diff(buffers.data[i][j], buffers.data[x][y])));
-                            weight = std::exp(-pow(weight, 2) / 2);
-                            weight_sum += weight;
-                            
-                            result.data[i][j] += weight * src_color.data[x][y];
-                        }
+                for (int s = 0; s < samplers; ++s)
+                {
+                    vec2d offsets = Math::Vector::random_disk(kernal_radius);
+                    vec2i coords = vec2d(i, j) + offsets + 0.5;
+
+                    if (coords.x >= 0 && coords.x < src_color.height && coords.y >= 0 && coords.y < src_color.width)
+                    {
+                        // Use the G-buffers to weight the denoising
+                        double weight = 0;
+                        weight += src_color.diff(src_color.data[i][j], src_color.data[coords.x][coords.y]);
+                        (..., (weight += buffers.diff(buffers.data[i][j], buffers.data[coords.x][coords.y])));
+                        weight = std::exp(-weight);
+
+                        weight_sum += weight;
+
+                        result.data[i][j] += weight * src_color.data[coords.x][coords.y];
                     }
                 }
                 result.data[i][j] /= weight_sum;
@@ -51,5 +45,6 @@ public:
     }
 
 private:
-    int kernel_size = 1;
+    double kernal_radius;
+    int samplers;
 };

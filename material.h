@@ -156,25 +156,6 @@ private:
     }
 };
 
-class diffuse_light : public material
-{
-public:
-    diffuse_light(shared_ptr<texture> e) : emit(e) {}
-    diffuse_light(color c) : emit(make_shared<solid_color>(c)) {}
-
-    bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override { return false; }
-
-    color emitter(const ray &r_in, const hit_info &hit, double u, double v, const point3 &p) const override
-    {
-        if (!hit.front_face)
-            return color(0, 0, 0);
-        return emit->value(u, v, p);
-    }
-
-private:
-    shared_ptr<texture> emit;
-};
-
 class isotropic : public material
 {
 public:
@@ -199,3 +180,22 @@ public:
 private:
     shared_ptr<texture> albedo;
 };
+
+class diffuse_light : public material
+{
+public:
+    diffuse_light(shared_ptr<texture> e) : emit(e) {}
+    diffuse_light(color c) : emit(make_shared<solid_color>(c)) {}
+
+    bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override { return false; }
+
+    color emitter(const ray &r_in, const hit_info &hit, double u, double v, const point3 &p) const override
+    {
+        if (!hit.front_face)
+            return color(0, 0, 0);
+        return emit->value(u, v, p);
+    }
+
+private:
+    shared_ptr<texture> emit;
+};;

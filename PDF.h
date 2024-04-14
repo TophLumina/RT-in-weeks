@@ -93,7 +93,6 @@ private:
     point3 origin;
 };
 
-// TODO:: use template to make it support variable number of pdfs
 template <typename... Args>
 class mixture_pdf : public pdf
 {

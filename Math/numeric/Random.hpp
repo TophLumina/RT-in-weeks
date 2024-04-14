@@ -7,15 +7,24 @@
 
 MATH_NAMESPACE_BEGIN
 
+// Returns a random number in the range [0, 1).
 template <typename T>
-static MATH_INLINE T random_range(T const &min = std::numeric_limits<T>::min(), T const &max = std::numeric_limits<T>::max())
+static MATH_INLINE T random()
 {
     static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 
     std::random_device rd;
     static std::mt19937 gen(rd());
-    static std::uniform_real_distribution<T> dis(min, max);
+    static std::uniform_real_distribution<T> dis(0, 1);
     return dis(gen);
+}
+
+template <typename T>
+static MATH_INLINE T random_range(T const &min = std::numeric_limits<T>::min(), T const &max = std::numeric_limits<T>::max())
+{
+    static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+
+    return min + random<T>() * (max - min);
 }
 
 template <typename T>
