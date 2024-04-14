@@ -3,12 +3,12 @@
 #include <atomic>
 #include <chrono>
 #include <cmath>
-#include <cstdlib>
 #include <functional>
 #include <future>
 #include <iostream>
 #include <queue>
 #include <thread>
+#include <vector>
 
 #include "FrameBuffer.h"
 #include "PDF.h"
@@ -45,7 +45,7 @@ public:
     FrameBuffer<vec3> index_buffer;
 
     // Denoiser
-    Denoiser denoiser = Denoiser(4, 64);
+    Denoiser denoiser = Denoiser(4, 64, pool);
 
     void render(const hittable &world, const hittable &lights)
     {
@@ -175,7 +175,7 @@ private:
         // Buffers
         color_buffer = FrameBuffer<color>(image_width, image_height, color(0, 0, 0));
         position_buffer = FrameBuffer<point3>(image_width, image_height, point3(0, 0, 0), [](const point3 &a, const point3 &b) -> double
-                                              { return Math::Vector::distance(a, b) / 10; });
+                                              { return Math::Vector::distance(a, b) / 100; });
         normal_buffer = FrameBuffer<vec3>(image_width, image_height, vec3(0, 0, 0), [](const vec3 &a, const vec3 &b) -> double
                                           { return (1.0 - Math::Vector::dot(a, b)); });
         index_buffer = FrameBuffer<vec3>(image_width, image_height, vec3(0, 0, 0), [](const vec3 &a, const vec3 &b) -> double
@@ -258,7 +258,7 @@ private:
         }
     }
 
-    void render_pixel(int i, int j, const hittable &world, const hittable &lights, color **const buffer)
+    void render_pixel(int i, int j, const hittable &world, const hittable &lights, vector<vector<color>> &buffer)
     {
         color pixel_color(0, 0, 0);
 
