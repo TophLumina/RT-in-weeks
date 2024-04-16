@@ -73,6 +73,31 @@ private:
     onb coord;
 };
 
+class CookTorranceBRDF_pdf : public pdf
+{
+public:
+    CookTorranceBRDF_pdf(const vec3 &w, float _roughness, float _refractiveIndex) : roughness(_roughness), refractiveIndex(_refractiveIndex)
+    {
+        coord.build_from_w(w);
+    }
+
+    double value(const vec3 &direction) const override
+    {
+        auto cos_theta = dot(normalize(direction), coord.w);
+        return fmax(0.0, cos_theta / Math::M_PI);
+    }
+
+    vec3 generate() const override
+    {
+        return coord.local(random_CookTorrance_direction(roughness));
+    }
+
+private:
+    onb coord;
+    float roughness;
+    float refractiveIndex;
+};
+
 class hittable_pdf : public pdf
 {
 public:

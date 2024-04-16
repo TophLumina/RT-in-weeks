@@ -1,3 +1,5 @@
+#pragma once
+
 #include "FrameBuffer.h"
 #include "color.h"
 #include "ThreadPool.hpp"
