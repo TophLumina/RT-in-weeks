@@ -64,64 +64,6 @@ public:
     virtual color operator()(const vec3 &wi, const vec3 &wo, const vec3 &n) const = 0;
 };
 
-class LambertianBRDF : public BRDF
-{
-public:
-    LambertianBRDF(const color &albedo) : albedo(albedo) {}
-
-    color operator()(const vec3 &wi, const vec3 &wo, const vec3 &n) const
-    {
-        return albedo / Math::M_PI;
-    }
-
-private:
-    color albedo;
-};
-
-class CookTorranceBRDF : public BRDF
-{
-public:
-    CookTorranceBRDF(const color &albedo, float roughness, float refractiveIndex)
-        : albedo(albedo), roughness(roughness), refractiveIndex(refractiveIndex) {}
-
-    color operator()(const vec3 &wi, const vec3 &wo, const vec3 &n) const
-    {
-        vec3 h = normalize(wi + wo);
-        float D = distributionBeckmann(n, h, roughness);
-        float G = geometrySmith(n, wi, wo, roughness);
-        float F = fresnelSchlick(Math::max(dot(wi, h), 0.0), refractiveIndex);
-        return albedo * D * G * F / (4 * Math::max(dot(n, wi), 0.0) * Math::max(dot(n, wo), 0.0));
-    }
-
-private:
-    color albedo;
-    float roughness;
-    float refractiveIndex;
-};
-
-class GGXBRDF : public BRDF
-{
-public:
-    GGXBRDF(const color &albedo, float roughness, float refractiveIndex)
-        : albedo(albedo), roughness(roughness), refractiveIndex(refractiveIndex) {}
-
-    color operator()(const vec3 &wi, const vec3 &wo, const vec3 &n) const
-    {
-        vec3 kd = albedo / Math::M_PI;
-        vec3 ks = albedo;
-        vec3 h = normalize(wi + wo);
-        float D = distributionGGX(n, h, roughness);
-        float G = geometrySmith(n, wi, wo, roughness);
-        float F = fresnelSchlick(Math::max(dot(wi, h), 0.0), refractiveIndex);
-        return kd + (ks * D * G * F) / (4 * Math::max(dot(n, wi), 0.0) * Math::max(dot(n, wo), 0.0));
-    }
-
-private:
-    color albedo;
-    float roughness;
-    float refractiveIndex;
-};
-
 class DisneyBRDF : public BRDF
 {
 public:
@@ -152,17 +94,9 @@ private:
     }
 };
 
-enum class BRDFType : unsigned int
-{
-    Lambertian,
-    CookTorrance,
-    GGX,
-    Disney
-};
 
 struct BRDFInfo
 {
-    BRDFType type;
     color albedo;
     float roughness;
     float refractiveIndex;
