@@ -5,6 +5,8 @@
 
 // TODO:: add support for subsurface scattering, transparency, and anisotropy
 
+// n: normal, h: half vector (both normalized)
+
 float distributionBeckmann(const vec3& n, const vec3& h, float roughness) {
     float a = roughness * roughness;
     float a2 = a * a;

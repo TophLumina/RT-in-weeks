@@ -234,6 +234,7 @@ private:
                     return sinfo.attenuation * ray_color(sinfo.ray_without_pdf, world, current_depth, lights);
 
                 // TODO:: need create a new branch for light sampling (Shadow Ray, Direct Lighting, etc.)
+                
 
                 auto light_pdf = make_shared<hittable_pdf>(lights, hit.hit_point);
                 mixture_pdf mixed_pdf(vector<double>{0.25, 0.75}, light_pdf, sinfo.pdf_ptr);

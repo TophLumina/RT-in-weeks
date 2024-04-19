@@ -2,6 +2,8 @@
 
 #include "ONB.h"
 #include "rtweekend.h"
+#include "BRDF.h"
+
 #include <memory>
 #include <numeric>
 #include <vector>
@@ -71,31 +73,58 @@ public:
 
 private:
     onb coord;
+
+    vec3 random_cosine_direction() const
+    {
+        auto r1 = Math::random_range(0.0, 1.0);
+        auto r2 = Math::random_range(0.0, 1.0);
+
+        auto phi = 2 * Math::M_PI * r1;
+
+        auto x = cos(phi) * sqrt(r2);
+        auto y = sin(phi) * sqrt(r2);
+        auto z = sqrt(1 - r2);
+
+        return vec3(x, y, z);
+    }
 };
 
-class CookTorranceBRDF_pdf : public pdf
+class GGX_pdf : public pdf
 {
 public:
-    CookTorranceBRDF_pdf(const vec3 &w, float _roughness, float _refractiveIndex) : roughness(_roughness), refractiveIndex(_refractiveIndex)
-    {
-        coord.build_from_w(w);
-    }
+    GGX_pdf(const vec3 &w, float roughness) : alpha(roughness) { coord.build_from_w(w); }
 
     double value(const vec3 &direction) const override
     {
         auto cos_theta = dot(normalize(direction), coord.w);
-        return fmax(0.0, cos_theta / Math::M_PI);
+        return distributionGGX(coord.w, normalize(direction), alpha) * cos_theta / Math::M_PI;
     }
 
     vec3 generate() const override
     {
-        return coord.local(random_CookTorrance_direction(roughness));
+        return coord.local(GGX_sample(coord.w, alpha));
     }
 
 private:
     onb coord;
-    float roughness;
-    float refractiveIndex;
+    float alpha;
+
+    vec3 GGX_sample(const vec3 &w, float alpha) const
+    {
+        auto r1 = Math::random_range(0.0, 1.0);
+        auto r2 = Math::random_range(0.0, 1.0);
+
+        auto a2 = alpha * alpha;
+
+        auto phi = 2 * Math::M_PI * r1;
+        auto cos_theta = sqrt((1 - r2) / (1 + (a2 - 1) * r2));
+
+        auto x = cos(phi) * cos_theta;
+        auto y = sin(phi) * cos_theta;
+        auto z = sqrt(1 - x * x - y * y);
+
+        return vec3(x, y, z);
+    }
 };
 
 class hittable_pdf : public pdf

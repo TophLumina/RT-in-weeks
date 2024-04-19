@@ -39,22 +39,21 @@ unsigned int material::index = 1; // 0 is reserved for the background
 class BRDFMaterial : public material
 {
 public:
-    BRDFMaterial(shared_ptr<texture> albedo, BRDFType brdf_type, float roughness, float refractiveIndex, float metallic)
-        : albedo(albedo), brdf_type(brdf_type), roughness(roughness), refractiveIndex(refractiveIndex), metallic(metallic) {}
+    BRDFMaterial(shared_ptr<texture> albedo, float roughness, float refractiveIndex, float metallic)
+        : albedo(albedo), roughness(roughness), refractiveIndex(refractiveIndex), metallic(metallic) {}
 
-    BRDFMaterial(const color& color, BRDFType brdf_type, float roughness, float refractiveIndex, float metallic)
-        : albedo(make_shared<solid_color>(color)), brdf_type(brdf_type), roughness(roughness), refractiveIndex(refractiveIndex), metallic(metallic) {}
+    BRDFMaterial(const color& color, float roughness, float refractiveIndex, float metallic)
+        : albedo(make_shared<solid_color>(color)), roughness(roughness), refractiveIndex(refractiveIndex), metallic(metallic) {}
 
     bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {
 
         sinfo.brdf_info.albedo = albedo->value(hit.u, hit.v, hit.hit_point);
-        sinfo.brdf_info.type = brdf_type;
         sinfo.brdf_info.roughness = roughness;
         sinfo.brdf_info.refractiveIndex = refractiveIndex;
         sinfo.brdf_info.metallic = metallic;
 
-        if (brdf_type == BRDFType::)
+        sinfo.no_pdf = false;
 
         return true;
     }
@@ -73,7 +72,6 @@ public:
     }
 private:
     shared_ptr<texture> albedo;
-    BRDFType brdf_type;
     float roughness;
     float refractiveIndex;
     float metallic;
