@@ -58,6 +58,8 @@ float fresnelSchlick(float cosTheta, float refractiveIndex)
     return F0 + (1 - F0) * pow(1 - cosTheta, 5);
 }
 
+
+// Disney BRDF
 class BRDF
 {
 public:

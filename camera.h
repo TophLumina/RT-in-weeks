@@ -179,7 +179,7 @@ private:
         normal_buffer = FrameBuffer<vec3>(image_width, image_height, vec3(0, 0, 0), [](const vec3 &a, const vec3 &b) -> double
                                           { return (1.0 - Math::Vector::dot(a, b)); });
         index_buffer = FrameBuffer<vec3>(image_width, image_height, vec3(0, 0, 0), [](const vec3 &a, const vec3 &b) -> double
-                                         { return (a.x == b.x && a.y == b.y) ? 0 : 1; });
+                                         { return (a.x == b.x && a.y == b.y) ? 0 : 100.0; });
     }
 
     // Return a random offset in the square around pixel, given two sub-pixel indexes
