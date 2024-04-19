@@ -2,7 +2,8 @@
 
 #include "ONB.h"
 #include "rtweekend.h"
-#include "BRDF.h"
+#include "hittable.h"
+#include "BRDFComponents.h"
 
 #include <memory>
 #include <numeric>
@@ -58,7 +59,7 @@ private:
 class cosine_hemisphere_pdf : public pdf
 {
 public:
-    cosine_hemisphere_pdf(const vec3 &w) { coord.build_from_w(w); }
+    cosine_hemisphere_pdf(const vec3 &n) { coord.build_from_w(n); }
 
     double value(const vec3 &direction) const override
     {
@@ -92,7 +93,7 @@ private:
 class GGX_pdf : public pdf
 {
 public:
-    GGX_pdf(const vec3 &w, float roughness) : alpha(roughness) { coord.build_from_w(w); }
+    GGX_pdf(const vec3 &n, float roughness) : alpha(roughness) { coord.build_from_w(n); }
 
     double value(const vec3 &direction) const override
     {
@@ -118,6 +119,44 @@ private:
 
         auto phi = 2 * Math::M_PI * r1;
         auto cos_theta = sqrt((1 - r2) / (1 + (a2 - 1) * r2));
+
+        auto x = cos(phi) * cos_theta;
+        auto y = sin(phi) * cos_theta;
+        auto z = sqrt(1 - x * x - y * y);
+
+        return vec3(x, y, z);
+    }
+};
+
+class Beckmann_pdf : public pdf
+{
+public:
+    Beckmann_pdf(const vec3 &w, float roughness) : alpha(roughness) { coord.build_from_w(w); }
+
+    double value(const vec3 &direction) const override
+    {
+        auto cos_theta = dot(normalize(direction), coord.w);
+        return distributionBeckmann(coord.w, normalize(direction), alpha) * cos_theta / Math::M_PI;
+    }
+
+    vec3 generate() const override
+    {
+        return coord.local(Beckmann_sample(coord.w, alpha));
+    }
+
+private:
+    onb coord;
+    float alpha;
+
+    vec3 Beckmann_sample(const vec3 &w, float alpha) const
+    {
+        auto r1 = Math::random_range(0.0, 1.0);
+        auto r2 = Math::random_range(0.0, 1.0);
+
+        auto a2 = alpha * alpha;
+
+        auto phi = 2 * Math::M_PI * r1;
+        auto cos_theta = sqrt(log(1 - r2) / (-a2));
 
         auto x = cos(phi) * cos_theta;
         auto y = sin(phi) * cos_theta;

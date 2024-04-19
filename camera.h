@@ -230,22 +230,26 @@ private:
                     return emission_color;
 
                 // if pdf is not available, use specific ray as important ray
-                if (sinfo.no_pdf)
-                    return sinfo.attenuation * ray_color(sinfo.ray_without_pdf, world, current_depth, lights);
 
                 // TODO:: need create a new branch for light sampling (Shadow Ray, Direct Lighting, etc.)
                 
+                // auto light_pdf = make_shared<hittable_pdf>(lights, hit.hit_point);
+                // mixture_pdf mixed_pdf(vector<double>{0.25, 0.75}, light_pdf, sinfo.brdf_pdf);
 
-                auto light_pdf = make_shared<hittable_pdf>(lights, hit.hit_point);
-                mixture_pdf mixed_pdf(vector<double>{0.25, 0.75}, light_pdf, sinfo.pdf_ptr);
+                // ray scattered = ray(hit.hit_point, mixed_pdf.generate(), r.time());
+                // auto pdf_val = mixed_pdf.value(scattered.direction());
 
-                ray scattered = ray(hit.hit_point, mixed_pdf.generate(), r.time());
-                auto pdf_val = mixed_pdf.value(scattered.direction());
+                // Debug
+                ray scattered = ray(hit.hit_point, sinfo.brdf_pdf->generate(), r.time());
+                auto pdf_val = sinfo.brdf_pdf->value(scattered.direction());
+                clog << "pdf_val: " << pdf_val << endl;
 
-                double scattering_pdf = hit.mat->scattering_pdf(r, hit, scattered);
+                // double scattering_pdf = hit.mat->scattering_pdf(r, hit, scattered);
+                color scatter_color = hit.mat->scatter_color(r, hit, scattered);
+                clog << "scatter_color: " << scatter_color << endl;
 
                 color sample_color = ray_color(scattered, world, current_depth, lights);
-                color scatter_color = (sinfo.attenuation * scattering_pdf * sample_color) / pdf_val;
+                scatter_color = (sample_color * scatter_color) / pdf_val;
 
                 return emission_color + scatter_color;
             }

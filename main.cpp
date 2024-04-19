@@ -18,7 +18,7 @@ int main(int argc, char const *argv[])
     camera cam;
 
     cam.aspect_ratio = 1.0;
-    cam.image_width = 800;
+    cam.image_width = 60;
     cam.samplers_per_pixel = argc > 1 ? atoi(argv[argc - 1]) : 8; // samplers
     cam.max_depth = 50;
 

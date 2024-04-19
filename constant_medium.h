@@ -1,7 +1,6 @@
 #pragma once
 
 #include "rtweekend.h"
-
 #include "hittable.h"
 #include "material.h"
 #include "texture.h"

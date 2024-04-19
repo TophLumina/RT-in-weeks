@@ -1,7 +1,7 @@
 #pragma once
 
-#include "rtweekend.h"
-
+#include "constants.h"
+#include "vec3.h"
 #include "hittable.h"
 #include "hittable_list.h"
 

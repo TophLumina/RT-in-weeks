@@ -1,18 +1,11 @@
 #pragma once
 
-#include <cmath>
-#include <limits>
-#include <random>
-
 #include "Math/include/Math.h"
 
 // Usings
 using std::make_shared;
 using std::shared_ptr;
 using std::sqrt;
-
-// Constants
-const double infinity = std::numeric_limits<double>::infinity();
 
 // Utility
 inline double degree2radius(double degrees) { return degrees / 180.0 * Math::M_PI; }
@@ -30,6 +23,7 @@ inline double random_double(double min, double max) { return min + (max - min) *
 inline int random_int(int min, int max) { return static_cast<int>(random_double(min, max + 1)); }
 
 // Headers
+#include "constants.h"
 #include "color.h"
 #include "ray.h"
 #include "hittable.h"
