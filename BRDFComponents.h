@@ -53,8 +53,7 @@ float geometrySmith(const vec3 &n, const vec3 &v, const vec3 &l, float roughness
     return ggx1 * ggx2;
 }
 
-float fresnelSchlick(float cosTheta, float refractiveIndex)
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
-    float F0 = pow((1 - refractiveIndex) / (1 + refractiveIndex), 2);
-    return F0 + (1 - F0) * pow(1 - cosTheta, 5);
+    return F0 + (1.0f - F0) * pow(Math::clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f);
 }

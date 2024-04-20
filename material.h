@@ -64,8 +64,6 @@ public:
     color scatter_color(const ray &r_in, const hit_info &hit, const ray &scattered) const override
     {
         color baseColor = albedo->value(hit.u, hit.v, hit.hit_point);
-        float metallic = this->metallic;
-        float roughness = this->roughness;
 
         vec3 wi = normalize(-r_in.direction());
         vec3 wo = normalize(scattered.direction());
