@@ -93,10 +93,6 @@ public:
         generate_Gbuffers(world);
         std::clog << "G-buffers Generated." << endl;
 
-        // G-buffers colorize
-        auto colorizer = Math::Vector::length<3, double>;
-        color_buffer.colorize(colorizer);
-
         // G-buffers output
         rtw_image raw_image(color_buffer, comp, trans);
         raw_image.saveasPPM("./raw.ppm");
@@ -250,8 +246,8 @@ private:
                 // double scattering_pdf = hit.mat->scattering_pdf(r, hit, scattered);
                 color scatter_color = hit.mat->scatter_color(r, hit, scattered);
 
-                color sample_color = ray_color(scattered, world, current_depth, lights);
-                scatter_color = (sample_color * scatter_color) / pdf_val;
+                color incoming_color = ray_color(scattered, world, current_depth, lights);
+                scatter_color = (scatter_color * incoming_color) / pdf_val;
 
                 return emission_color + scatter_color;
             }

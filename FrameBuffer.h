@@ -71,24 +71,4 @@ public:
     }
 
     ~FrameBuffer() = default;
-
-    // used for normalizing the data
-    void colorize(std::function<float(const T&)> colorizer)
-    {
-        T sum = T();
-
-        for (int i = 0; i < height; ++i)
-            for (int j = 0; j < width; ++j)
-                sum += data[i][j];
-
-        T avg = sum / (width * height);
-
-        std::clog << "Average: " << avg << "\n";
-
-        float denom = 1 / colorizer(avg);
-
-        for (int i = 0; i < height; ++i)
-            for (int j = 0; j < width; ++j)
-                data[i][j] *= denom;
-    }
 };
