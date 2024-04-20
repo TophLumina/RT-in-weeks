@@ -10,7 +10,7 @@ auto SceneFunc = cornell_box;
 
 void cornell_box(hittable_list &world, hittable_list &lights)
 {
-    auto aluminum = make_shared<DisneyMaterial>(color(0.8, 0.85, 0.88), 0.2, 0, 1.0);
+    auto aluminum = make_shared<DisneyMaterial>(color(0.8, 0.85, 0.88), 1.0, 0, 0);
     auto red = make_shared<DisneyMaterial>(color(0.65, 0.05, 0.05), 1.0, 0, 0);
     auto white = make_shared<DisneyMaterial>(color(0.73, 0.73, 0.73), 1.0, 0, 0);
     auto green = make_shared<DisneyMaterial>(color(0.12, 0.45, 0.15), 1.0, 0, 0);

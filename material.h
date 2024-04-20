@@ -55,8 +55,12 @@ public:
         sinfo.brdf_info.metallic = metallic;
 
         // for Disney BRDF, we use GGX for NDC
-        sinfo.brdf_pdf = make_shared<GGX_pdf>(hit.normal, roughness);
-        sinfo.no_pdf = false;
+        // sinfo.brdf_pdf = make_shared<GGX_pdf>(hit.normal, roughness);
+        // sinfo.no_pdf = false;
+
+        // use uniform sampling for testing
+        sinfo.brdf_pdf = make_shared<cosine_hemisphere_pdf>(hit.normal);
+        sinfo.no_pdf = true;
 
         return true;
     }
