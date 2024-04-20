@@ -103,14 +103,14 @@ public:
 
     vec3 generate() const override
     {
-        return coord.local(GGX_sample(coord.w, alpha));
+        return coord.local(GGX_sample(alpha));
     }
 
 private:
     onb coord;
     float alpha;
 
-    vec3 GGX_sample(const vec3 &w, float alpha) const
+    vec3 GGX_sample(float alpha) const
     {
         auto r1 = Math::random_range(0.0, 1.0);
         auto r2 = Math::random_range(0.0, 1.0);
@@ -141,14 +141,14 @@ public:
 
     vec3 generate() const override
     {
-        return coord.local(Beckmann_sample(coord.w, alpha));
+        return coord.local(Beckmann_sample(alpha));
     }
 
 private:
     onb coord;
     float alpha;
 
-    vec3 Beckmann_sample(const vec3 &w, float alpha) const
+    vec3 Beckmann_sample(float alpha) const
     {
         auto r1 = Math::random_range(0.0, 1.0);
         auto r2 = Math::random_range(0.0, 1.0);

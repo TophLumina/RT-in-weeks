@@ -22,6 +22,7 @@ float distributionGGX(const vec3 &n, const vec3 &h, float roughness)
     float a = roughness * roughness;
     float a2 = a * a;
     float NdotH = Math::max(dot(n, h), EPSILON);
+    
     float NdotH2 = NdotH * NdotH;
 
     float nom = a2;

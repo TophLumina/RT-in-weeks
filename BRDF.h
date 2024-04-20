@@ -37,12 +37,13 @@ public:
         vec3 h = normalize(wi + wo);
         float D = distributionGGX(n, h, roughness);
         float G = geometrySmith(n, wi, wo, roughness);
-        float F = fresnelSchlick(Math::max(dot(wi, h), 0.0));
+        vec3 F = fresnelSchlick(Math::max(dot(wi, h), 0.0));
 
-        color specular = specularColor * (D * G * F) / (4 * Math::max(dot(n, wi), 0.0) * Math::max(dot(n, wo), 0.0));
+        color specular = specularColor * (D * G * F) / (4 * dot(n, wi) * dot(n, wo));
         color diffuse = baseColor / Math::M_PI;
 
-        return Math::Vector::linear_lerp(diffuse, specular, vec3(metallic));
+        color result = linear_lerp(diffuse, specular, vec3(metallic));
+        return result * Math::max(dot(n, wi), 0.0);
     }
 
 private:
@@ -51,8 +52,8 @@ private:
     float metallic;
     float roughness;
 
-    float fresnelSchlick(float cosTheta) const
+    vec3 fresnelSchlick(float cosTheta, const color &F0 = color(0.04, 0.04, 0.04)) const
     {
-        return metallic + (1 - metallic) * pow(1 - cosTheta, 5);
+        return F0 + (color(1, 1, 1) - F0) * pow(1 - cosTheta, 5);
     }
 };

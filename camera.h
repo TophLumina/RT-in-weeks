@@ -93,6 +93,10 @@ public:
         generate_Gbuffers(world);
         std::clog << "G-buffers Generated." << endl;
 
+        // G-buffers colorize
+        auto colorizer = Math::Vector::length<3, double>;
+        color_buffer.colorize(colorizer);
+
         // G-buffers output
         rtw_image raw_image(color_buffer, comp, trans);
         raw_image.saveasPPM("./raw.ppm");
@@ -242,11 +246,9 @@ private:
                 // Debug
                 ray scattered = ray(hit.hit_point, sinfo.brdf_pdf->generate(), r.time());
                 auto pdf_val = sinfo.brdf_pdf->value(scattered.direction());
-                clog << "pdf_val: " << pdf_val << endl;
 
                 // double scattering_pdf = hit.mat->scattering_pdf(r, hit, scattered);
                 color scatter_color = hit.mat->scatter_color(r, hit, scattered);
-                clog << "scatter_color: " << scatter_color << endl;
 
                 color sample_color = ray_color(scattered, world, current_depth, lights);
                 scatter_color = (sample_color * scatter_color) / pdf_val;

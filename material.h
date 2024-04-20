@@ -4,6 +4,7 @@
 #include "PDF.h"
 #include "rtweekend.h"
 #include "texture.h"
+#include <iostream>
 #include <memory>
 
 class scatter_info
@@ -66,7 +67,7 @@ public:
         float metallic = this->metallic;
         float roughness = this->roughness;
 
-        vec3 wi = normalize(r_in.direction());
+        vec3 wi = normalize(-r_in.direction());
         vec3 wo = normalize(scattered.direction());
         vec3 n = hit.normal;
 
