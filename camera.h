@@ -249,7 +249,8 @@ private:
                 scatter_color = (scatter_color * incoming_color) / pdf_val;
 
                 color result = emission_color + scatter_color;
-                return result / (result + color(1, 1, 1));
+                color x = max(color(0), result - color(0.004));
+                return (x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06);
             }
 
             return color(0, 0, 0);
