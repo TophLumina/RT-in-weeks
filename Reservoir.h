@@ -5,7 +5,6 @@
 #include <type_traits>
 #include <vector>
 
-
 template <typename T, typename F = double>
 struct ReservoirItem
 {
@@ -13,7 +12,7 @@ struct ReservoirItem
     F weight;
 };
 
-enum class ReservoirMixMethod
+enum class ReservoirMixMethod : unsigned char
 {
     Mixture,
     Majority,
@@ -161,7 +160,7 @@ public:
     }
 
     // Serve a Item from the Reservoir according to the weights
-    const ReservoirItem<T, F>& Serve() const
+    const ReservoirItem<T, F> &Serve() const
     {
         F random_num = random_double() * total_weight;
         F sum = 0;
