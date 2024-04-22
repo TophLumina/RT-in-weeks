@@ -19,8 +19,9 @@ int main(int argc, char const *argv[])
 
     cam.aspect_ratio = 1.0;
     cam.image_width = 800;
-    cam.samplers_per_pixel = argc > 1 ? atoi(argv[argc - 1]) : 8; // samplers
-    cam.max_depth = 50;
+    cam.samplers_per_pixel = argc > 1 ? atoi(argv[argc - 1]) : 64; // samplers
+    cam.shadow_samples = 4;
+    cam.max_depth = 16;
 
     cam.vfov = 40;
     cam.lookfrom = point3(278, 278, -800);

@@ -19,7 +19,7 @@ void cornell_box(hittable_list &world, hittable_list &lights)
     auto red = make_shared<lambertian>(color(0.65, 0.05, 0.05));
     auto white = make_shared<lambertian>(color(0.73, 0.73, 0.73));
     auto green = make_shared<lambertian>(color(0.12, 0.45, 0.15));
-    auto light = make_shared<diffuse_light>(color(15, 15, 15));
+    auto light = make_shared<diffuse_directional_light>(color(15, 15, 15));
 
     world.add(make_shared<quad>(point3(555, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), green));
     world.add(make_shared<quad>(point3(0, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), red));
@@ -49,7 +49,7 @@ void cornell_box_modified(hittable_list &world, hittable_list &lights)
     auto red = make_shared<lambertian>(color(0.65, 0.05, 0.05));
     auto white = make_shared<lambertian>(color(0.73, 0.73, 0.73));
     auto green = make_shared<lambertian>(color(0.12, 0.45, 0.15));
-    auto light = make_shared<diffuse_light>(color(15, 15, 15));
+    auto light = make_shared<diffuse_directional_light>(color(15, 15, 15));
 
     world.add(make_shared<quad>(point3(555, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), green));
     world.add(make_shared<quad>(point3(0, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), red));

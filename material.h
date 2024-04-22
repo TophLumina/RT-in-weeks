@@ -23,6 +23,8 @@ public:
     material() { ++index; }
     virtual ~material() = default;
 
+    virtual bool is_emissive() const { return false; }
+    
     virtual color emitter(const ray &r_in, const hit_info &hit, double u, double v, const point3 &p) const
     {
         return color(0, 0, 0);
@@ -181,19 +183,19 @@ private:
     shared_ptr<texture> albedo;
 };
 
-class diffuse_light : public material
+class diffuse_directional_light : public material
 {
 public:
-    diffuse_light(shared_ptr<texture> e) : emit(e) {}
-    diffuse_light(color c) : emit(make_shared<solid_color>(c)) {}
+    diffuse_directional_light(shared_ptr<texture> e) : emit(e) {}
+    diffuse_directional_light(color c) : emit(make_shared<solid_color>(c)) {}
 
-    bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override { return false; }
+    bool is_emissive() const override { return true; }
 
     color emitter(const ray &r_in, const hit_info &hit, double u, double v, const point3 &p) const override
     {
         if (!hit.front_face)
             return color(0, 0, 0);
-        return emit->value(u, v, p);
+        return emit->value(u, v, p) * dot(-normalize(r_in.direction()), hit.normal);
     }
 
 private:

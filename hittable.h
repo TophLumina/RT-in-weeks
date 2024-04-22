@@ -16,7 +16,7 @@ public:
     point3 hit_point;
     vec3 normal;
     shared_ptr<material> mat;
-    unsigned int hittable_index; // For debugging and denoising
+    unsigned int hittable_index = 0;    // For debugging and denoising
     double t;
     double u;
     double v;

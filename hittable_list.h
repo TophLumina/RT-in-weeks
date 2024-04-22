@@ -63,16 +63,41 @@ public:
     double pdf_value(const point3 &origin, const vec3 &v) const override
     {
         if (!objects.empty())
-            return objects[0]->pdf_value(origin, v);
+        {
+            auto sum = 0.0;
+
+            for (const auto &object : objects)
+                sum += object->pdf_value(origin, v);
+
+            return sum / objects.size();
+        }
 
         return hittable::pdf_value(origin, v);
     }
+
     vec3 random(const vec3 &origin) const override
     {
         if (!objects.empty())
-            return objects[0]->random(origin);
+        {
+            int index = random_int(0, objects.size() - 1);
+            return objects[index]->random(origin);
+        }
 
         return hittable::random(origin);
+    }
+
+    // for shadow rays only
+    shared_ptr<hittable> operator[](int i) const
+    {
+        return objects[i];
+    }
+
+    shared_ptr<hittable> random_hittable() const
+    {
+        if (objects.empty())
+            return nullptr;
+
+        return objects[random_int(0, objects.size() - 1)];
     }
 
 private:

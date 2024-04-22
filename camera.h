@@ -6,6 +6,7 @@
 #include <functional>
 #include <future>
 #include <iostream>
+#include <memory>
 #include <queue>
 #include <thread>
 #include <vector>
@@ -24,7 +25,8 @@ class camera
 public:
     double aspect_ratio = 1.0;   // Ratio of image width over height
     int image_width = 1;         // Rendered image width in pixel count
-    int samplers_per_pixel = 16; // Amount of samplers for each pixel
+    int samplers_per_pixel = 64; // Amount of samplers for each pixel
+    int shadow_samples = 16;     // Amount of samplers for each shadow ray
     int max_depth = 20;          // Ray bounce limit
 
     double vfov = 90;                   // Vertical field of view
@@ -45,9 +47,9 @@ public:
     FrameBuffer<vec3> index_buffer;
 
     // Denoiser
-    Denoiser denoiser = Denoiser(4, 64, pool);
+    Denoiser denoiser = Denoiser(2, 64, pool);
 
-    void render(const hittable &world, const hittable &lights)
+    void render(const hittable &world, const hittable_list &lights)
     {
         initialize();
 
@@ -213,7 +215,7 @@ private:
         return ray(ray_origin, ray_direction, ray_time);
     }
 
-    color ray_color(const ray &r, const hittable &world, int current_depth, const hittable &lights) const
+    color ray_color(const ray &r, const hittable &world, int current_depth, const hittable_list &lights) const
     {
         hit_info hit;
 
@@ -223,30 +225,66 @@ private:
             --current_depth;
             if (current_depth > 0)
             {
-                color emission_color = hit.mat->emitter(r, hit, hit.u, hit.v, hit.hit_point);
+                color emission = hit.mat->emitter(r, hit, hit.u, hit.v, hit.hit_point);
                 scatter_info sinfo;
 
                 if (!hit.mat->scatter(r, hit, sinfo))
-                    return emission_color;
+                    return emission;
 
                 // if pdf is not available, use specific ray as important ray
                 if (sinfo.no_pdf)
                     return sinfo.attenuation * ray_color(sinfo.ray_without_pdf, world, current_depth, lights);
 
                 // TODO:: need create a new branch for light sampling (Shadow Ray, Direct Lighting, etc.)
+                color direct_lighting(0, 0, 0);
+                for (int i = 0; i < shadow_samples; ++i)
+                {
+                    // Randomly sample a light source
+                    shared_ptr<hittable> light = lights.random_hittable();
+                    vec3 light_dir = light->random(hit.hit_point);
 
-                auto light_pdf = make_shared<hittable_pdf>(lights, hit.hit_point);
-                mixture_pdf mixed_pdf(vector<double>{0.25, 0.75}, light_pdf, sinfo.pdf_ptr);
+                    // Check if the light source is visible
+                    hit_info light_hit;
+                    ray shadow_ray(hit.hit_point, light_dir);
+                    if (world.hit(shadow_ray, interval(0.001, 1), light_hit))
+                    {
+                        if (light_hit.hittable_index == light->index)
+                        {
+                            auto scattering_pdf = hit.mat->scattering_pdf(r, hit, shadow_ray);
+                            auto cosine_theta = dot(hit.normal, normalize(light_dir));
+                            // auto light_falloff = 1.0 / squared_distance(hit.hit_point, light_hit.hit_point);
+                            color light_radiance = cosine_theta * light_hit.mat->emitter(shadow_ray, light_hit, light_hit.u, light_hit.v, light_hit.hit_point);
+                            direct_lighting += sinfo.attenuation * light_radiance * scattering_pdf / light->pdf_value(hit.hit_point, light_dir);
+                        }
+                    }
+                }
+                
+                direct_lighting /= shadow_samples;
+                direct_lighting += emission;
+
+                // Mixture PDF for light sampling and material scattering
+                auto lights_pdf = make_shared<hittable_pdf>(lights, hit.hit_point);
+                mixture_pdf mixed_pdf(vector<double>{0.25, 0.75}, lights_pdf, sinfo.pdf_ptr);
+
+                // auto mixed_pdf = sinfo.pdf_ptr;
 
                 ray scattered = ray(hit.hit_point, mixed_pdf.generate(), r.time());
                 auto pdf_val = mixed_pdf.value(scattered.direction());
 
                 double scattering_pdf = hit.mat->scattering_pdf(r, hit, scattered);
+                auto cosine_theta = dot(normalize(scattered.direction()), hit.normal);
 
-                color sample_color = ray_color(scattered, world, current_depth, lights);
-                color scatter_color = (sinfo.attenuation * scattering_pdf * sample_color) / pdf_val;
+                color incoming_radiance = cosine_theta * ray_color(scattered, world, current_depth, lights);
+                color indirect_lighting = (sinfo.attenuation * scattering_pdf * incoming_radiance) / pdf_val;
 
-                return emission_color + scatter_color;
+                // remap the color to avoid overexposure
+                return direct_lighting + indirect_lighting;
+
+                // debug for direct lighting
+                // return direct_lighting;
+
+                // debug for indirect lighting
+                // return indirect_lighting;
             }
 
             return color(0, 0, 0);
@@ -258,7 +296,7 @@ private:
         }
     }
 
-    void render_pixel(int i, int j, const hittable &world, const hittable &lights, vector<vector<color>> &buffer)
+    void render_pixel(int i, int j, const hittable &world, const hittable_list &lights, vector<vector<color>> &buffer)
     {
         color pixel_color(0, 0, 0);
 
