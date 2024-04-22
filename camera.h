@@ -235,7 +235,7 @@ private:
                 if (sinfo.no_pdf)
                     return sinfo.attenuation * ray_color(sinfo.ray_without_pdf, world, current_depth, lights);
 
-                // TODO:: need create a new branch for light sampling (Shadow Ray, Direct Lighting, etc.)
+                // Direct lighting (Shadow rays)
                 color direct_lighting(0, 0, 0);
                 for (int i = 0; i < shadow_samples; ++i)
                 {
@@ -263,7 +263,7 @@ private:
                 direct_lighting += emission;
 
                 // Mixture PDF for light sampling and material scattering
-                auto lights_pdf = make_shared<hittable_pdf>(lights, hit.hit_point);
+                auto lights_pdf = make_shared<hittable_pdf<>>(lights, hit.hit_point);
                 mixture_pdf mixed_pdf(vector<double>{0.25, 0.75}, lights_pdf, sinfo.pdf_ptr);
 
                 // auto mixed_pdf = sinfo.pdf_ptr;

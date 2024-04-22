@@ -10,7 +10,7 @@ class scatter_info
 {
 public:
     color attenuation;
-    shared_ptr<pdf> pdf_ptr;
+    shared_ptr<pdf<>> pdf_ptr;
     bool no_pdf;
     ray ray_without_pdf;
 };
@@ -47,7 +47,7 @@ public:
     bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {
         sinfo.attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
-        sinfo.pdf_ptr = make_shared<cosine_hemisphere_pdf>(hit.normal);
+        sinfo.pdf_ptr = make_shared<cosine_hemisphere_pdf<>>(hit.normal);
         sinfo.no_pdf = false;
 
         return true;
@@ -73,7 +73,7 @@ public:
     bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {
         sinfo.attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
-        sinfo.pdf_ptr = make_shared<uniform_hemisphere_pdf>(hit.normal);
+        sinfo.pdf_ptr = make_shared<uniform_hemisphere_pdf<>>(hit.normal);
         sinfo.no_pdf = false;
 
         return true;
@@ -167,7 +167,7 @@ public:
     bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
     {
         sinfo.attenuation = albedo->value(hit.u, hit.v, hit.hit_point);
-        sinfo.pdf_ptr = make_shared<uniform_sphere_pdf>();
+        sinfo.pdf_ptr = make_shared<uniform_sphere_pdf<>>();
         sinfo.no_pdf = false;
 
         return true;
