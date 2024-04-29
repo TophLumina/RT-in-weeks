@@ -47,7 +47,7 @@ public:
     FrameBuffer<vec3> index_buffer;
 
     // Denoiser
-    Denoiser denoiser = Denoiser(2, 64, pool);
+    Denoiser denoiser = Denoiser(1.44, 64, pool);
 
     void render(const hittable &world, const hittable_list &lights)
     {
@@ -254,17 +254,17 @@ private:
                             auto cosine_theta = dot(hit.normal, normalize(light_dir));
                             // auto light_falloff = 1.0 / squared_distance(hit.hit_point, light_hit.hit_point);
                             color light_radiance = cosine_theta * light_hit.mat->emitter(shadow_ray, light_hit, light_hit.u, light_hit.v, light_hit.hit_point);
-                            direct_lighting += sinfo.attenuation * light_radiance * scattering_pdf / light->pdf_value(hit.hit_point, light_dir);
+                            direct_lighting += sinfo.attenuation * scattering_pdf * light_radiance / light->pdf_value(hit.hit_point, light_dir);
                         }
                     }
                 }
-                
+
                 direct_lighting /= shadow_samples;
                 direct_lighting += emission;
 
                 // Mixture PDF for light sampling and material scattering
                 auto lights_pdf = make_shared<hittable_pdf<>>(lights, hit.hit_point);
-                mixture_pdf mixed_pdf(vector<double>{0.25, 0.75}, lights_pdf, sinfo.pdf_ptr);
+                mixture_pdf mixed_pdf(vector<double>{0.15, 0.85}, lights_pdf, sinfo.pdf_ptr);
 
                 // auto mixed_pdf = sinfo.pdf_ptr;
 
@@ -277,13 +277,13 @@ private:
                 color incoming_radiance = cosine_theta * ray_color(scattered, world, current_depth, lights);
                 color indirect_lighting = (sinfo.attenuation * scattering_pdf * incoming_radiance) / pdf_val;
 
-                // remap the color to avoid overexposure
-                return direct_lighting + indirect_lighting;
+                // remap the color to avoid overexposure (Reinhard)
+                return (direct_lighting + indirect_lighting) / (1 + direct_lighting + indirect_lighting);
 
-                // debug for direct lighting
+                // debug output for direct lighting
                 // return direct_lighting;
 
-                // debug for indirect lighting
+                // debug output for indirect lighting
                 // return indirect_lighting;
             }
 
