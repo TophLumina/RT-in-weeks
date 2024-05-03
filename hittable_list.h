@@ -24,28 +24,9 @@ public:
     {
         *m_transform = Math::Matrix::translate(*m_transform, offset);
         for (auto &object : objects)
-            object->parent_transform(*m_transform);
+            object->translate(offset);
 
         geometric_center = Math::Matrix::transform(*m_transform, vec4(geometric_center, 1.0));
-        update_bounding_box();
-    }
-
-    void scale(const vec3 &scalar, const vec3 &center) override
-    {
-        *m_transform = Math::Matrix::scale(*m_transform, scalar, center);
-        for (auto &object : objects)
-            object->scale(scalar, center);
-
-        geometric_center = Math::Matrix::transform(*m_transform, vec4(geometric_center, 1.0));
-        update_bounding_box();
-    }
-
-    void scale(const vec3 &scalar) override
-    {
-        *m_transform = Math::Matrix::scale(*m_transform, scalar);
-        for (auto &object : objects)
-            object->scale(scalar, geometric_center);
-
         update_bounding_box();
     }
 
@@ -62,16 +43,6 @@ public:
     void rotate(const vec3 &axis, double angle) override
     {
         rotate(axis, angle, geometric_center);
-    }
-
-    void parent_transform(const mat4 &transform) override
-    {
-        *m_transform = (*m_transform) * transform;
-        for (auto &object : objects)
-            object->parent_transform(*m_transform);
-
-        geometric_center = Math::Matrix::transform(*m_transform, vec4(geometric_center, 1.0));
-        update_bounding_box();
     }
 
     void clear()
@@ -156,10 +127,12 @@ public:
         return objects[random_int(0, objects.size() - 1)];
     }
 
-    hittable_list flattened_for_bvh() const
+    // FIXME: Bugs in hittable_list flatten method
+    // Flatten the nested hittable_list for full BVH Tree construction
+    shared_ptr<hittable_list> flattened_for_bvh() const
     {
-        hittable_list list;
-        list.flatten_list(make_shared<hittable_list>(*this));
+        auto list = make_shared<hittable_list>();
+        list->flatten_list(make_shared<hittable_list>(*this));
 
         return list;
     }
@@ -174,13 +147,15 @@ private:
             bbox = aabb(bbox, object->bounding_box());
     }
 
+    // FIXME: Bugs in hittable_list flatten method
     // Flatten the nested hittable_list for full BVH Tree construction
     void flatten_list(shared_ptr<hittable_list> src_list)
     {
         for (const auto &object : src_list->objects)
         {
-            if (std::dynamic_pointer_cast<hittable_list>(object))
-                flatten_list(std::dynamic_pointer_cast<hittable_list>(object));
+            auto nested_list = std::dynamic_pointer_cast<hittable_list>(object);
+            if (nested_list)
+                flatten_list(nested_list);
             else
                 add(object);
         }

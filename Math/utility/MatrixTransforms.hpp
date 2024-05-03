@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../include/mat.h"
 #include "../numeric/Numeric.hpp"
 #include "VectorOperations.hpp"
 
@@ -42,12 +41,14 @@ static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> rotate(mat<4, 4, T> const &m, Vecto
     result[0] = m[0] * rotate[0][0] + m[1] * rotate[0][1] + m[2] * rotate[0][2];
     result[1] = m[0] * rotate[1][0] + m[1] * rotate[1][1] + m[2] * rotate[1][2];
     result[2] = m[0] * rotate[2][0] + m[1] * rotate[2][1] + m[2] * rotate[2][2];
+    result[3] = m[3];
     return result;
 }
 
 template <typename T>
 static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> rotate(const mat<4, 4, T> &m, const Vector::vec<3, T> &_axis, T angle, const Vector::vec<3, T> &center)
 {
+    // bugs in this function
     return translate(rotate(translate(m, -center), _axis, angle), center);
 }
 

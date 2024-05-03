@@ -13,9 +13,9 @@ class quad : public hittable
 public:
     quad(const point3 &a, const point3 &b, const point3 &c, const point3 &d, shared_ptr<material> m) : vertices({a, b, c, d}), mat(m)
     {
-        Q = a;
-        u = b - a;
-        v = d - a;
+        Q = vertices[0];
+        u = vertices[1] - vertices[0];
+        v = vertices[3] - vertices[0];
 
         auto n = cross(u, v);
         normal = normalize(n);
@@ -46,37 +46,27 @@ public:
         return bbox;
     }
 
-    void translate(const vec3 &offset) override
+    void translate(const vec3 &offsets) override
     {
-        *m_transform = Math::Matrix::translate(*m_transform, offset);
-        Q = Math::Matrix::transform(*m_transform, vec4(Q, 1.0));
+        *m_transform = Math::Matrix::translate(*m_transform, offsets);
+        Q = Math::Matrix::transform(*m_transform, vec4(vertices[0], 1.0));
+        D = dot(normal, Q);
 
         geometric_center = Q + 0.5 * u + 0.5 * v;
         update_bounding_box();
     }
 
-    void scale(const vec3 &scalar, const vec3 &center) override
+    void rotate(const vec3 &axis, double angle, const vec3 &center) override
     {
-        *m_transform = Math::Matrix::scale(*m_transform, scalar, center);
-        Q = Math::Matrix::transform(*m_transform, vec4(Q, 1.0));
-        u = Math::Matrix::transform(*m_transform, vec4(u, 0.0));
-        v = Math::Matrix::transform(*m_transform, vec4(v, 0.0));
+        *m_transform = Math::Matrix::rotate(*m_transform, axis, angle, center);
+        Q = Math::Matrix::transform(*m_transform, vec4(vertices[0], 1.0));
+        u = Math::Matrix::transform(*m_transform, vec4(vertices[1] - vertices[0], 0.0));
+        v = Math::Matrix::transform(*m_transform, vec4(vertices[3] - vertices[0], 0.0));
 
-        geometric_center = Q + 0.5 * u + 0.5 * v;
-        update_bounding_box();
-    }
-
-    void scale(const vec3 &scalar) override
-    {
-        scale(scalar, Q + 0.5 * u + 0.5 * v);
-    }
-
-    void rotate(const vec3 &axis, double angle, const vec3 &origin) override
-    {
-        *m_transform = Math::Matrix::rotate(*m_transform, axis, angle, origin);
-        Q = Math::Matrix::transform(*m_transform, vec4(Q, 1.0));
-        u = Math::Matrix::transform(*m_transform, vec4(u, 0.0));
-        v = Math::Matrix::transform(*m_transform, vec4(v, 0.0));
+        auto n = cross(u, v);
+        normal = Math::Matrix::transform(*m_transform, vec4(normal, 0.0));
+        D = dot(normal, Q);
+        w = n / dot(n, n);
 
         geometric_center = Q + 0.5 * u + 0.5 * v;
         update_bounding_box();
@@ -84,18 +74,7 @@ public:
 
     void rotate(const vec3 &axis, double angle) override
     {
-        rotate(axis, angle, Q + 0.5 * u + 0.5 * v);
-    }
-
-    void parent_transform(const mat4 &transform) override
-    {
-        *m_transform = (*m_transform) * transform;
-        Q = Math::Matrix::transform(*m_transform, vec4(Q, 1.0));
-        u = Math::Matrix::transform(*m_transform, vec4(u, 0.0));
-        v = Math::Matrix::transform(*m_transform, vec4(v, 0.0));
-
-        geometric_center = Q + 0.5 * u + 0.5 * v;
-        update_bounding_box();
+        rotate(axis, angle, geometric_center);
     }
 
     bool hit(const ray &r, interval ray_t, hit_info &hit) const override

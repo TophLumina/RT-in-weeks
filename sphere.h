@@ -73,7 +73,7 @@ public:
     void rotate(const vec3 &axis, double angle, const vec3 &center) override
     {
         *m_transform = Math::Matrix::rotate(*m_transform, axis, angle, center);
-        this->center = Math::Matrix::transform(*m_transform, vec4(center, 1.0));
+        this->center = Math::Matrix::transform(*m_transform, vec4(origin, 1.0));
 
         geometric_center = this->center;
         update_bounding_box();
@@ -82,15 +82,6 @@ public:
     void rotate(const vec3 &axis, double angle) override
     {
         rotate(axis, angle, this->origin);
-    }
-
-    void parent_transform(const mat4 &transform) override
-    {
-        *m_transform = (*m_transform) * transform;
-        center = Math::Matrix::transform(*m_transform, vec4(origin, 1.0));
-
-        geometric_center = center;
-        update_bounding_box();
     }
 
     double pdf_value(const point3 &_origin, const vec3 &v) const override

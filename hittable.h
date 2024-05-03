@@ -34,7 +34,6 @@ public:
     virtual void scale(const V &scalar) = 0;
     virtual void rotate(const V &axis, F angle, const V &center) = 0;
     virtual void rotate(const V &axis, F angle) = 0;
-    virtual void parent_transform(const M &transform) = 0;
 
     // Model matrix
     shared_ptr<M> m_transform = std::make_shared<M>(1.0);
@@ -55,7 +54,6 @@ public:
     virtual void scale(const vec3 &scalar) override {}
     virtual void rotate(const vec3 &axis, double angle, const vec3 &center) override {}
     virtual void rotate(const vec3 &axis, double angle) override {}
-    virtual void parent_transform(const mat4 &transform) override {}
 
     virtual double pdf_value(const point3 &origin, const vec3 &v) const { return 0.0; }
     virtual vec3 random(const vec3 &origin) const { return vec3(1, 0, 0); }
