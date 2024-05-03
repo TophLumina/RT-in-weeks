@@ -235,6 +235,23 @@ static MATH_FUNCTION_QUALIFIERS Vector::vec<M, T> operator*(mat<M, N, T> const &
     return result;
 }
 
+template <LENGTH_TYPE L, LENGTH_TYPE M, LENGTH_TYPE N, typename T>
+static MATH_FUNCTION_QUALIFIERS mat<L, N, T> operator*(mat<L, M, T> const &m, mat<M, N, T> const &n)
+{
+    mat<L, N, T> result;
+    for (LENGTH_TYPE i = 0; i < L; ++i)
+    {
+        for (LENGTH_TYPE j = 0; j < N; ++j)
+        {
+            for (LENGTH_TYPE k = 0; k < M; ++k)
+            {
+                result[i][j] += m[k][j] * n[i][k];
+            }
+        }
+    }
+    return result;
+}
+
 // Only Support Squared Matrices
 template <LENGTH_TYPE M, LENGTH_TYPE N, typename T>
 static MATH_FUNCTION_QUALIFIERS Vector::vec<M, T> transform(mat<M, N, T> const &m, Vector::vec<N, T> const &v)

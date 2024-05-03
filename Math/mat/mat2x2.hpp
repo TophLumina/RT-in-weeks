@@ -251,67 +251,6 @@ struct mat<2, 2, T>
         return temp;
     }
 
-    // --binary arithmetic operators-- //
-    friend MATH_INLINE mat operator+(const mat &m, T scalar)
-    {
-        return {m.m00 + scalar, m.m01 + scalar, m.m10 + scalar, m.m11 + scalar};
-    }
-
-    friend MATH_INLINE mat operator+(T scalar, const mat &m)
-    {
-        return {scalar + m.m00, scalar + m.m01, scalar + m.m10, scalar + m.m11};
-    }
-
-    friend MATH_INLINE mat operator+(const mat &m1, const mat &m2)
-    {
-        return {m1.m00 + m2.m00, m1.m01 + m2.m01, m1.m10 + m2.m10, m1.m11 + m2.m11};
-    }
-
-    friend MATH_INLINE mat operator-(const mat &m, T scalar)
-    {
-        return {m.m00 - scalar, m.m01 - scalar, m.m10 - scalar, m.m11 - scalar};
-    }
-
-    friend MATH_INLINE mat operator-(T scalar, const mat &m)
-    {
-        return {scalar - m.m00, scalar - m.m01, scalar - m.m10, scalar - m.m11};
-    }
-
-    friend MATH_INLINE mat operator-(const mat &m1, const mat &m2)
-    {
-        return {m1.m00 - m2.m00, m1.m01 - m2.m01, m1.m10 - m2.m10, m1.m11 - m2.m11};
-    }
-
-    friend MATH_INLINE mat operator*(const mat &m, T scalar)
-    {
-        return {m.m00 * scalar, m.m01 * scalar, m.m10 * scalar, m.m11 * scalar};
-    }
-
-    friend MATH_INLINE mat operator*(T scalar, const mat &m)
-    {
-        return {scalar * m.m00, scalar * m.m01, scalar * m.m10, scalar * m.m11};
-    }
-
-    friend MATH_INLINE mat operator*(const mat &m1, const mat &m2)
-    {
-        return mat(m1.m00 * m2.m00, m1.m01 * m2.m01, m1.m10 * m2.m10, m1.m11 * m2.m11);
-    }
-
-    friend MATH_INLINE mat operator/(const mat &m, T scalar)
-    {
-        return mat(m.m00 / scalar, m.m01 / scalar, m.m10 / scalar, m.m11 / scalar);
-    }
-
-    friend MATH_INLINE mat operator/(T scalar, const mat &m)
-    {
-        return mat(scalar / m.m00, scalar / m.m01, scalar / m.m10, scalar / m.m11);
-    }
-
-    friend MATH_INLINE mat operator/(const mat &m1, const mat &m2)
-    {
-        return mat(m1.m00 / m2.m00, m1.m01 / m2.m01, m1.m10 / m2.m10, m1.m11 / m2.m11);
-    }
-
     // --comparison operators-- //
     friend MATH_INLINE bool operator==(const mat &m1, const mat &m2)
     {

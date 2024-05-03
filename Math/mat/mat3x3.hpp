@@ -62,7 +62,7 @@ struct mat<3, 3, T>
     {
         return c[i];
     }
-    
+
     // --implicit basic constructors-- //
     MATH_INLINE mat() : m00(0), m01(0), m02(0),
                         m10(0), m11(0), m12(0),
@@ -314,67 +314,6 @@ struct mat<3, 3, T>
         mat temp(*this);
         --*this;
         return temp;
-    }
-
-    // --binary arithmetic operators-- //
-    friend MATH_INLINE mat operator+(const mat &m, T scalar)
-    {
-        return {m.m00 + scalar, m.m01 + scalar, m.m02 + scalar, m.m10 + scalar, m.m11 + scalar, m.m12 + scalar, m.m20 + scalar, m.m21 + scalar, m.m22 + scalar};
-    }
-
-    friend MATH_INLINE mat operator+(T scalar, const mat &m)
-    {
-        return {scalar + m.m00, scalar + m.m01, scalar + m.m02, scalar + m.m10, scalar + m.m11, scalar + m.m12, scalar + m.m20, scalar + m.m21, scalar + m.m22};
-    }
-
-    friend MATH_INLINE mat operator+(const mat &m1, const mat &m2)
-    {
-        return {m1.m00 + m2.m00, m1.m01 + m2.m01, m1.m02 + m2.m02, m1.m10 + m2.m10, m1.m11 + m2.m11, m1.m12 + m2.m12, m1.m20 + m2.m20, m1.m21 + m2.m21, m1.m22 + m2.m22};
-    }
-
-    friend MATH_INLINE mat operator-(const mat &m, T scalar)
-    {
-        return {m.m00 - scalar, m.m01 - scalar, m.m02 - scalar, m.m10 - scalar, m.m11 - scalar, m.m12 - scalar, m.m20 - scalar, m.m21 - scalar, m.m22 - scalar};
-    }
-
-    friend MATH_INLINE mat operator-(T scalar, const mat &m)
-    {
-        return {scalar - m.m00, scalar - m.m01, scalar - m.m02, scalar - m.m10, scalar - m.m11, scalar - m.m12, scalar - m.m20, scalar - m.m21, scalar - m.m22};
-    }
-
-    friend MATH_INLINE mat operator-(const mat &m1, const mat &m2)
-    {
-        return {m1.m00 - m2.m00, m1.m01 - m2.m01, m1.m02 - m2.m02, m1.m10 - m2.m10, m1.m11 - m2.m11, m1.m12 - m2.m12, m1.m20 - m2.m20, m1.m21 - m2.m21, m1.m22 - m2.m22};
-    }
-
-    friend MATH_INLINE mat operator*(const mat &m, T scalar)
-    {
-        return {m.m00 * scalar, m.m01 * scalar, m.m02 * scalar, m.m10 * scalar, m.m11 * scalar, m.m12 * scalar, m.m20 * scalar, m.m21 * scalar, m.m22 * scalar};
-    }
-
-    friend MATH_INLINE mat operator*(T scalar, const mat &m)
-    {
-        return {scalar * m.m00, scalar * m.m01, scalar * m.m02, scalar * m.m10, scalar * m.m11, scalar * m.m12, scalar * m.m20, scalar * m.m21, scalar * m.m22};
-    }
-
-    friend MATH_INLINE mat operator*(const mat &m1, const mat &m2)
-    {
-        return {m1.m00 * m2.m00, m1.m01 * m2.m01, m1.m02 * m2.m02, m1.m10 * m2.m10, m1.m11 * m2.m11, m1.m12 * m2.m12, m1.m20 * m2.m20, m1.m21 * m2.m21, m1.m22 * m2.m22};
-    }
-
-    friend MATH_INLINE mat operator/(const mat &m, T scalar)
-    {
-        return {m.m00 / scalar, m.m01 / scalar, m.m02 / scalar, m.m10 / scalar, m.m11 / scalar, m.m12 / scalar, m.m20 / scalar, m.m21 / scalar, m.m22 / scalar};
-    }
-
-    friend MATH_INLINE mat operator/(T scalar, const mat &m)
-    {
-        return {scalar / m.m00, scalar / m.m01, scalar / m.m02, scalar / m.m10, scalar / m.m11, scalar / m.m12, scalar / m.m20, scalar / m.m21, scalar / m.m22};
-    }
-
-    friend MATH_INLINE mat operator/(const mat &m1, const mat &m2)
-    {
-        return {m1.m00 / m2.m00, m1.m01 / m2.m01, m1.m02 / m2.m02, m1.m10 / m2.m10, m1.m11 / m2.m11, m1.m12 / m2.m12, m1.m20 / m2.m20, m1.m21 / m2.m21, m1.m22 / m2.m22};
     }
 
     // --comparison operators-- //
