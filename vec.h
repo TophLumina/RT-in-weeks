@@ -5,8 +5,16 @@
 #include "./Math/include/Math.h"
 
 using namespace Math::Vector;
+using namespace Math::Matrix;
 
+using vec2 = vec2d;
 using vec3 = vec3d;
+using vec4 = vec4d;
+
+using mat2 = mat2x2d;
+using mat3 = mat3x3d;
+using mat4 = mat4x4d;
+
 using point3 = vec3;
 
 // Sampling direction weighted by cosine on upper hemisphere (z+)

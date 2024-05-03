@@ -64,7 +64,7 @@ struct vec<3, T>
     }
 
     // --implicit basic constructors-- //
-    MATH_INLINE vec() : x(0), y(0), z(0) {}
+    MATH_INLINE vec() : x(static_cast<T>(0)), y(static_cast<T>(0)), z(static_cast<T>(0)) {}
     MATH_INLINE vec(const vec &v) = default;
     MATH_INLINE vec &operator=(const vec &v) = default;
     MATH_INLINE vec(vec &&v) = default;
@@ -72,7 +72,7 @@ struct vec<3, T>
 
     // --explicit conversion constructors-- //
     template <typename U>
-    MATH_INLINE MATH_EXPLICIT vec(U scalar) : x(static_cast<T>(scalar)), y(static_cast<T>(scalar)), z(static_cast<T>(scalar)) {}
+    MATH_INLINE MATH_EXPLICIT vec(U scalar = 0) : x(static_cast<T>(scalar)), y(static_cast<T>(scalar)), z(static_cast<T>(scalar)) {}
 
     template <typename U>
     MATH_INLINE MATH_EXPLICIT vec(const vec<3, U> &v) : x(static_cast<T>(v.x)), y(static_cast<T>(v.y)), z(static_cast<T>(v.z)) {}
@@ -84,16 +84,16 @@ struct vec<3, T>
     MATH_INLINE MATH_EXPLICIT vec(A x, const vec<2, B> &v) : x(static_cast<T>(x)), y(static_cast<T>(v.x)), z(static_cast<T>(v.y)) {}
 
     template <typename A, typename B>
-    MATH_INLINE MATH_EXPLICIT vec(const vec<2, A> &v, B z) : x(static_cast<T>(v.x)), y(static_cast<T>(v.y)), z(static_cast<T>(z)) {}
+    MATH_INLINE MATH_EXPLICIT vec(const vec<2, A> &v, B z = 0) : x(static_cast<T>(v.x)), y(static_cast<T>(v.y)), z(static_cast<T>(z)) {}
 
     template <typename A, typename B, typename C>
-    MATH_INLINE MATH_EXPLICIT vec(A x, B y, C z) : x(static_cast<T>(x)), y(static_cast<T>(y)), z(static_cast<T>(z)) {}
+    MATH_INLINE MATH_EXPLICIT vec(A x = 0, B y = 0, C z = 0) : x(static_cast<T>(x)), y(static_cast<T>(y)), z(static_cast<T>(z)) {}
 
     template <typename A, typename B, typename C>
-    MATH_INLINE MATH_EXPLICIT vec(const vec<1, A> &v, B y, C z) : x(static_cast<T>(v.x)), y(static_cast<T>(y)), z(static_cast<T>(z)) {}
+    MATH_INLINE MATH_EXPLICIT vec(const vec<1, A> &v, B y = 0, C z = 0) : x(static_cast<T>(v.x)), y(static_cast<T>(y)), z(static_cast<T>(z)) {}
 
     template <typename A, typename B, typename C>
-    MATH_INLINE MATH_EXPLICIT vec(A x, const vec<1, B> &v, C z) : x(static_cast<T>(x)), y(static_cast<T>(v.x)), z(static_cast<T>(z)) {}
+    MATH_INLINE MATH_EXPLICIT vec(A x, const vec<1, B> &v, C z = 0) : x(static_cast<T>(x)), y(static_cast<T>(v.x)), z(static_cast<T>(z)) {}
 
     template <typename A, typename B, typename C>
     MATH_INLINE MATH_EXPLICIT vec(A x, B y, const vec<1, C> &v) : x(static_cast<T>(x)), y(static_cast<T>(y)), z(static_cast<T>(v.x)) {}

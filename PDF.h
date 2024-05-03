@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ONB.h"
+#include "hittable.h"
+
 #include <memory>
 #include <numeric>
 #include <vector>

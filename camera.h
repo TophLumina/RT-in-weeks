@@ -11,13 +11,13 @@
 #include <thread>
 #include <vector>
 
+#include "rtweekend.h"
 #include "FrameBuffer.h"
 #include "PDF.h"
 #include "ThreadPool.hpp"
 #include "denoiser.h"
 #include "hittable_list.h"
 #include "material.h"
-#include "rtweekend.h"
 
 using namespace std;
 class camera

@@ -3,8 +3,8 @@
 #include <memory>
 #include <vector>
 
-#include "hittable.h"
 #include "aabb.h"
+#include "hittable.h"
 
 using std::make_shared;
 using std::shared_ptr;
@@ -20,6 +20,60 @@ public:
 
     aabb bounding_box() const override { return bbox; }
 
+    void translate(const vec3 &offset) override
+    {
+        *m_transform = Math::Matrix::translate(*m_transform, offset);
+        for (auto &object : objects)
+            object->parent_transform(*m_transform);
+
+        geometric_center = Math::Matrix::transform(*m_transform, vec4(geometric_center, 1.0));
+        update_bounding_box();
+    }
+
+    void scale(const vec3 &scalar, const vec3 &center) override
+    {
+        *m_transform = Math::Matrix::scale(*m_transform, scalar, center);
+        for (auto &object : objects)
+            object->scale(scalar, center);
+
+        geometric_center = Math::Matrix::transform(*m_transform, vec4(geometric_center, 1.0));
+        update_bounding_box();
+    }
+
+    void scale(const vec3 &scalar) override
+    {
+        *m_transform = Math::Matrix::scale(*m_transform, scalar);
+        for (auto &object : objects)
+            object->scale(scalar, geometric_center);
+
+        update_bounding_box();
+    }
+
+    void rotate(const vec3 &axis, double angle, const vec3 &center) override
+    {
+        *m_transform = Math::Matrix::rotate(*m_transform, axis, angle, center);
+        for (auto &object : objects)
+            object->rotate(axis, angle, center);
+
+        geometric_center = Math::Matrix::transform(*m_transform, vec4(geometric_center, 1.0));
+        update_bounding_box();
+    }
+
+    void rotate(const vec3 &axis, double angle) override
+    {
+        rotate(axis, angle, geometric_center);
+    }
+
+    void parent_transform(const mat4 &transform) override
+    {
+        *m_transform = (*m_transform) * transform;
+        for (auto &object : objects)
+            object->parent_transform(*m_transform);
+
+        geometric_center = Math::Matrix::transform(*m_transform, vec4(geometric_center, 1.0));
+        update_bounding_box();
+    }
+
     void clear()
     {
         objects.clear();
@@ -28,16 +82,18 @@ public:
     void add(shared_ptr<hittable> object)
     {
         objects.push_back(object);
+
+        geometric_center = (geometric_center * (objects.size() - 1) + object->geometric_center) / objects.size();
         bbox = aabb(bbox, object->bounding_box());
     }
 
-    // Avoid nested hittable_list in objects, otherwise it will lead to an incomplete build of BVH Tree
-    // Why there is no difference on test run? heavily nested structure should have caused serious performance issues...
+    // Maybe it's better to keep a nested structure in hittable_list to maintain the parent-child relationship
+    // Or use nested hittable_list in geometry, but not in BVH Tree construction
     void add(shared_ptr<hittable_list> object_list)
     {
-        for (auto i : object_list->objects)
-            objects.push_back(i);
+        objects.push_back(object_list);
 
+        geometric_center = (geometric_center * (objects.size() - object_list->objects.size()) + object_list->geometric_center * object_list->objects.size()) / objects.size();
         bbox = aabb(bbox, object_list->bounding_box());
     }
 
@@ -100,6 +156,36 @@ public:
         return objects[random_int(0, objects.size() - 1)];
     }
 
+    hittable_list flattened_for_bvh() const
+    {
+        hittable_list list;
+        list.flatten_list(make_shared<hittable_list>(*this));
+
+        return list;
+    }
+
 private:
     aabb bbox;
+
+    void update_bounding_box()
+    {
+        bbox = aabb();
+        for (const auto &object : objects)
+            bbox = aabb(bbox, object->bounding_box());
+    }
+
+    // Flatten the nested hittable_list for full BVH Tree construction
+    void flatten_list(shared_ptr<hittable_list> src_list)
+    {
+        for (const auto &object : src_list->objects)
+        {
+            if (std::dynamic_pointer_cast<hittable_list>(object))
+                flatten_list(std::dynamic_pointer_cast<hittable_list>(object));
+            else
+                add(object);
+        }
+
+        geometric_center = (geometric_center * (objects.size() - src_list->objects.size()) + src_list->geometric_center * src_list->objects.size()) / objects.size();
+        bbox = aabb(bbox, src_list->bounding_box());
+    }
 };

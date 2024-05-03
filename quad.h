@@ -1,43 +1,101 @@
 #pragma once
 
-#include "rtweekend.h"
-
+#include "Math/utility/MatrixOperations.hpp"
+#include "Math/utility/MatrixTransforms.hpp"
 #include "hittable.h"
 #include "hittable_list.h"
+#include "vec.h"
+
+#include <array>
 
 class quad : public hittable
 {
 public:
-    quad(const point3 &_Q, const vec3 &_u, const vec3 &_v, shared_ptr<material> m) : Q(_Q), u(_u), v(_v), mat(m)
+    quad(const point3 &a, const point3 &b, const point3 &c, const point3 &d, shared_ptr<material> m) : vertices({a, b, c, d}), mat(m)
     {
+        Q = a;
+        u = b - a;
+        v = d - a;
+
         auto n = cross(u, v);
         normal = normalize(n);
         D = dot(normal, Q);
         w = n / dot(n, n);
         area = length(n);
 
-        set_bounding_box();
+        geometric_center = Q + 0.5 * u + 0.5 * v;
+        update_bounding_box();
     }
 
-    virtual void set_bounding_box()
+    quad(const point3 &_Q, const vec3 &_u, const vec3 &_v, shared_ptr<material> m) : Q(_Q), u(_u), v(_v), mat(m)
     {
-        bbox = aabb(Q, Q + u + v).pad();
-    }
+        vertices = {Q, Q + u, Q + u + v, Q + v};
 
-    // Given the hit point in plane_UV coordinates, return false if outside the primitive, otherwise fill the hit_info with UV coords and return true
-    virtual bool is_interior(double a, double b, hit_info &hit) const
-    {
-        if (a < 0 || b < 0 || a > 1 || b > 1)
-            return false;
+        auto n = cross(u, v);
+        normal = normalize(n);
+        D = dot(normal, Q);
+        w = n / dot(n, n);
+        area = length(n);
 
-        hit.u = a;
-        hit.v = b;
-        return true;
+        geometric_center = Q + 0.5 * u + 0.5 * v;
+        update_bounding_box();
     }
 
     aabb bounding_box() const override
     {
         return bbox;
+    }
+
+    void translate(const vec3 &offset) override
+    {
+        *m_transform = Math::Matrix::translate(*m_transform, offset);
+        Q = Math::Matrix::transform(*m_transform, vec4(Q, 1.0));
+
+        geometric_center = Q + 0.5 * u + 0.5 * v;
+        update_bounding_box();
+    }
+
+    void scale(const vec3 &scalar, const vec3 &center) override
+    {
+        *m_transform = Math::Matrix::scale(*m_transform, scalar, center);
+        Q = Math::Matrix::transform(*m_transform, vec4(Q, 1.0));
+        u = Math::Matrix::transform(*m_transform, vec4(u, 0.0));
+        v = Math::Matrix::transform(*m_transform, vec4(v, 0.0));
+
+        geometric_center = Q + 0.5 * u + 0.5 * v;
+        update_bounding_box();
+    }
+
+    void scale(const vec3 &scalar) override
+    {
+        scale(scalar, Q + 0.5 * u + 0.5 * v);
+    }
+
+    void rotate(const vec3 &axis, double angle, const vec3 &origin) override
+    {
+        *m_transform = Math::Matrix::rotate(*m_transform, axis, angle, origin);
+        Q = Math::Matrix::transform(*m_transform, vec4(Q, 1.0));
+        u = Math::Matrix::transform(*m_transform, vec4(u, 0.0));
+        v = Math::Matrix::transform(*m_transform, vec4(v, 0.0));
+
+        geometric_center = Q + 0.5 * u + 0.5 * v;
+        update_bounding_box();
+    }
+
+    void rotate(const vec3 &axis, double angle) override
+    {
+        rotate(axis, angle, Q + 0.5 * u + 0.5 * v);
+    }
+
+    void parent_transform(const mat4 &transform) override
+    {
+        *m_transform = (*m_transform) * transform;
+        Q = Math::Matrix::transform(*m_transform, vec4(Q, 1.0));
+        u = Math::Matrix::transform(*m_transform, vec4(u, 0.0));
+        v = Math::Matrix::transform(*m_transform, vec4(v, 0.0));
+
+        geometric_center = Q + 0.5 * u + 0.5 * v;
+        update_bounding_box();
     }
 
     bool hit(const ray &r, interval ray_t, hit_info &hit) const override
@@ -91,6 +149,7 @@ public:
     }
 
 private:
+    std::array<point3, 4> vertices;
     point3 Q;
     vec3 u, v;
     shared_ptr<material> mat;
@@ -99,6 +158,22 @@ private:
     double D;
     vec3 w; // Cached value use for solving UV
     double area;
+
+    void update_bounding_box()
+    {
+        bbox = aabb(Q, Q + u + v).pad();
+    }
+
+    // Given the hit point in plane_UV coordinates, return false if outside the primitive, otherwise fill the hit_info with UV coords and return true
+    bool is_interior(double a, double b, hit_info &hit) const
+    {
+        if (a < 0 || b < 0 || a > 1 || b > 1)
+            return false;
+
+        hit.u = a;
+        hit.v = b;
+        return true;
+    }
 };
 
 // Return a 3D cube that contains the two opposite vertices a & b

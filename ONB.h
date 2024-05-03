@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rtweekend.h"
+#include "vec.h"
 
 class onb
 {

@@ -3,8 +3,6 @@
 #include "PDF.h"
 #include "rtweekend.h"
 #include "texture.h"
-#include <memory>
-
 
 class scatter_info
 {

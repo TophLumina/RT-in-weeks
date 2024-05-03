@@ -235,5 +235,12 @@ static MATH_FUNCTION_QUALIFIERS Vector::vec<M, T> operator*(mat<M, N, T> const &
     return result;
 }
 
+// Only Support Squared Matrices
+template <LENGTH_TYPE M, LENGTH_TYPE N, typename T>
+static MATH_FUNCTION_QUALIFIERS Vector::vec<M, T> transform(mat<M, N, T> const &m, Vector::vec<N, T> const &v)
+{
+    return m * v;
+}
+
 MATRIX_NAMESPACE_END
 MATH_NAMESPACE_END

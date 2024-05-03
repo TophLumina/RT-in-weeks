@@ -1,6 +1,7 @@
 #include "FrameBuffer.h"
 #include "color.h"
 #include "ThreadPool.hpp"
+
 #include <cmath>
 #include <future>
 #include <queue>

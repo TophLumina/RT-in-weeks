@@ -55,7 +55,7 @@ struct vec<1, T>
     }
 
     // --implicit basic constructors-- //
-    MATH_INLINE vec() : x(0) {}
+    MATH_INLINE vec() : x(static_cast<T>(0)) {}
     MATH_INLINE vec(const vec &v) = default;
     MATH_INLINE vec &operator=(const vec &v) = default;
     MATH_INLINE vec(vec &&v) = default;
@@ -63,7 +63,7 @@ struct vec<1, T>
 
     // --explicit conversion constructors-- //
     template <typename U>
-    MATH_INLINE MATH_EXPLICIT vec(U scalar) : x(static_cast<T>(scalar)) {}
+    MATH_INLINE MATH_EXPLICIT vec(U scalar = 0) : x(static_cast<T>(scalar)) {}
 
     template <typename U>
     MATH_INLINE MATH_EXPLICIT vec(const vec<1, U> &v) : x(static_cast<T>(v.x)) {}

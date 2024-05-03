@@ -65,7 +65,7 @@ struct vec<2, T>
     }
 
     // --implicit basic constructors-- //
-    MATH_INLINE vec() : x(0), y(0) {}
+    MATH_INLINE vec() : x(static_cast<T>(0)), y(static_cast<T>(0)) {}
     MATH_INLINE vec(const vec &v) = default;
     MATH_INLINE vec &operator=(const vec &v) = default;
     MATH_INLINE vec(vec &&v) = default;
@@ -73,7 +73,7 @@ struct vec<2, T>
 
     // --explicit conversion constructors-- //
     template <typename U>
-    MATH_INLINE MATH_EXPLICIT vec(U scalar) : x(static_cast<T>(scalar)), y(static_cast<T>(scalar)) {}
+    MATH_INLINE MATH_EXPLICIT vec(U scalar = 0) : x(static_cast<T>(scalar)), y(static_cast<T>(scalar)) {}
 
     template <typename U>
     MATH_INLINE MATH_EXPLICIT vec(const vec<2, U> &v) : x(static_cast<T>(v.x)), y(static_cast<T>(v.y)) {}
@@ -85,10 +85,10 @@ struct vec<2, T>
     MATH_INLINE MATH_EXPLICIT vec(const vec<4, U> &v) : x(static_cast<T>(v.x)), y(static_cast<T>(v.y)) {}
 
     template <typename A, typename B>
-    MATH_INLINE MATH_EXPLICIT vec(A x, B y) : x(static_cast<T>(x)), y(static_cast<T>(y)) {}
+    MATH_INLINE MATH_EXPLICIT vec(A x = 0, B y = 0) : x(static_cast<T>(x)), y(static_cast<T>(y)) {}
 
     template <typename A, typename B>
-    MATH_INLINE MATH_EXPLICIT vec(const vec<1, A> &v, B y) : x(static_cast<T>(v.x)), y(static_cast<T>(y)) {}
+    MATH_INLINE MATH_EXPLICIT vec(const vec<1, A> &v, B y = 0) : x(static_cast<T>(v.x)), y(static_cast<T>(y)) {}
 
     template <typename A, typename B>
     MATH_INLINE MATH_EXPLICIT vec(A x, const vec<1, B> &v) : x(static_cast<T>(x)), y(static_cast<T>(v.x)) {}

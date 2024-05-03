@@ -1,18 +1,20 @@
 #pragma once
 
-#include "rtweekend.h"
 #include "hittable.h"
 #include "hittable_list.h"
+#include "rtweekend.h"
+
 
 #include <algorithm>
 
 class bvh_node : public hittable
 {
 public:
-    bvh_node(const hittable_list &list) : bvh_node(list.objects, 0, list.objects.size()) {}
+    bvh_node(const hittable_list &list) : bvh_node(list.flattened_for_bvh().objects, 0, list.objects.size()) {}
 
-    bvh_node(const vector<shared_ptr<hittable>> &src_objects, size_t start, size_t end)
     // original method
+    // should never be called unless the list is already been flattened
+    bvh_node(const vector<shared_ptr<hittable>> &src_objects, size_t start, size_t end)
     {
         auto objects = src_objects;
 
@@ -42,12 +44,11 @@ public:
         }
         else
         {
-            std::sort(objects.begin() + start, objects.begin() + end, comparator);
-
             auto mid = start + object_span / 2;
             // no need to sort, just cut the vec by half will do the trick
             // but std::sort() is still slightly faster than our method :(
-            // kth_partition(objects, axis, start, end - 1, mid);
+            kth_partition(objects, axis, start, end - 1, mid);
+            // std::sort(objects.begin() + start, objects.begin() + end, comparator);
 
             left = make_shared<bvh_node>(objects, start, mid);
             right = make_shared<bvh_node>(objects, mid, end);

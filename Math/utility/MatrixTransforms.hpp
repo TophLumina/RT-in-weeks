@@ -17,12 +17,12 @@ static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> translate(mat<4, 4, T> const &m, Ve
 }
 
 template <typename T>
-static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> rotation(mat<4, 4, T> const &m, T angle, Vector::vec<3, T> const &v)
+static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> rotate(mat<4, 4, T> const &m, Vector::vec<3, T> const &_axis, T angle)
 {
     T a = angle;
     T c = cos(a);
     T s = sin(a);
-    Vector::vec<3, T> axis = normalize(v);
+    Vector::vec<3, T> axis = normalize(_axis);
     Vector::vec<3, T> temp = (static_cast<T>(1) - c) * axis;
 
     mat<4, 4, T> rotate;
@@ -46,6 +46,12 @@ static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> rotation(mat<4, 4, T> const &m, T a
 }
 
 template <typename T>
+static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> rotate(const mat<4, 4, T> &m, const Vector::vec<3, T> &_axis, T angle, const Vector::vec<3, T> &center)
+{
+    return translate(rotate(translate(m, -center), _axis, angle), center);
+}
+
+template <typename T>
 static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> scale(mat<4, 4, T> const &m, Vector::vec<3, T> const &v)
 {
     mat<4, 4, T> result = m;
@@ -54,6 +60,12 @@ static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> scale(mat<4, 4, T> const &m, Vector
     result[2] = m[2] * v[2];
     result[3] = m[3];
     return result;
+}
+
+template <typename T>
+static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> scale(const mat<4, 4, T> &m, const Vector::vec<3, T> &v, const Vector::vec<3, T> &center)
+{
+    return translate(scale(translate(m, -center), v), center);
 }
 
 template <typename T>

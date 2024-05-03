@@ -1,9 +1,6 @@
 #pragma once
 
-#include "rtweekend.h"
-
 #include "hittable.h"
-#include "hittable_list.h"
 
 class triangle : public hittable
 {

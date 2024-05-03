@@ -1,7 +1,6 @@
 #pragma once
 
 #include "rtweekend.h"
-#include <memory>
 
 class texture
 {

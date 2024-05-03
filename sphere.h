@@ -1,33 +1,27 @@
 #pragma once
 
-#include "hittable.h"
-#include "vec3.h"
+#include "Math/utility/MatrixOperations.hpp"
+#include "Math/utility/MatrixTransforms.hpp"
 #include "ONB.h"
+#include "hittable.h"
+#include "vec.h"
+
 
 class sphere : public hittable
 {
 public:
-    sphere(point3 _center1, double _radius, shared_ptr<material> _material) : sphere(_center1, _center1, _radius, _material) {}
-
-    sphere(point3 _center1, point3 _center2, double _radius, shared_ptr<material> _material) : center0(_center1), radius(_radius), mat(_material), is_moving(_center1 == _center2 ? false : true), center_vec(_center1 == _center2 ? vec3() : _center2 - _center1)
+    sphere(point3 _origin, double _radius, shared_ptr<material> _material) : origin(_origin), radius(_radius), mat(_material)
     {
-        vec3 rvec = vec3(radius, radius, radius);
-        if (is_moving)
-        {
-            aabb box0 = aabb(_center1 + rvec, _center1 - rvec);
-            aabb box1 = aabb(_center2 + rvec, _center2 - rvec);
-            bbox = aabb(box0, box1);
-        }
-        else
-        {
-            bbox = aabb(center0 + rvec, center0 - rvec);
-        }
+        center = origin;
+
+        geometric_center = center;
+        update_bounding_box();
     }
 
     // According to ray info load the hit_info if hit
     bool hit(const ray &r, interval ray_t, hit_info &hit) const override
     {
-        point3 center = is_moving ? sphere::center(r.time()) : center0;
+        point3 center = this->center;
         vec3 oc = r.origin() - center;
         auto a = squared_length(r.direction());
         auto half_b = dot(r.direction(), oc);
@@ -65,22 +59,55 @@ public:
         return bbox;
     }
 
-    double pdf_value(const point3 &origin, const vec3 &v) const override
-    // the method only works for stationary spheres
+    void translate(const vec3 &offsets) override
+    {
+        *m_transform = Math::Matrix::translate(*m_transform, offsets);
+        center = Math::Matrix::transform(*m_transform, vec4(origin, 1.0));
+
+        geometric_center = center;
+        update_bounding_box();
+    }
+
+    // no scaling for sphere
+
+    void rotate(const vec3 &axis, double angle, const vec3 &center) override
+    {
+        *m_transform = Math::Matrix::rotate(*m_transform, axis, angle, center);
+        this->center = Math::Matrix::transform(*m_transform, vec4(center, 1.0));
+
+        geometric_center = this->center;
+        update_bounding_box();
+    }
+
+    void rotate(const vec3 &axis, double angle) override
+    {
+        rotate(axis, angle, this->origin);
+    }
+
+    void parent_transform(const mat4 &transform) override
+    {
+        *m_transform = (*m_transform) * transform;
+        center = Math::Matrix::transform(*m_transform, vec4(origin, 1.0));
+
+        geometric_center = center;
+        update_bounding_box();
+    }
+
+    double pdf_value(const point3 &_origin, const vec3 &v) const override
     {
         hit_info hit;
-        if (!this->hit(ray(origin, v), interval(0.001, infinity), hit))
+        if (!this->hit(ray(_origin, v), interval(0.001, infinity), hit))
             return 0;
 
-        auto cos_theta_max = sqrt(1 - pow(radius, 2) / squared_length(center0 - origin));
+        auto cos_theta_max = sqrt(1 - pow(radius, 2) / squared_length(center - _origin));
         auto solid_angle = 2 * Math::M_PI * (1 - cos_theta_max);
 
         return 1 / solid_angle;
     }
 
-    vec3 random(const point3 &origin) const override
+    vec3 random(const point3 &_origin) const override
     {
-        vec3 dir = center0 - origin;
+        vec3 dir = center - _origin;
         auto dist_squared = squared_length(dir);
         onb coord;
         coord.build_from_w(dir);
@@ -88,16 +115,16 @@ public:
     }
 
 private:
-    point3 center0;
+    point3 origin;
+    point3 center;
     double radius;
     shared_ptr<material> mat;
-    bool is_moving;
-    vec3 center_vec;
     aabb bbox;
 
-    point3 center(double time) const
+    void update_bounding_box()
     {
-        return is_moving ? center0 + time * center_vec : center0;
+        vec3 rvec = vec3(radius, radius, radius);
+        bbox = aabb(center - rvec, center + rvec).pad();
     }
 
     static void get_uv(const point3 &p, double &u, double &v)
