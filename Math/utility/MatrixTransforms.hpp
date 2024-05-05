@@ -15,6 +15,15 @@ static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> translate(mat<4, 4, T> const &m, Ve
     return result;
 }
 
+// translate the matrix by the absolute value
+template <typename T>
+static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> translate_absolute(mat<4, 4, T> const &m, Vector::vec<3, T> const &v)
+{
+    mat<4, 4, T> result(m);
+    result[3] += Vector::vec<4, T>(v, 0);
+    return result;
+}
+
 template <typename T>
 static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> rotate(mat<4, 4, T> const &m, Vector::vec<3, T> const &_axis, T angle)
 {
@@ -48,8 +57,8 @@ static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> rotate(mat<4, 4, T> const &m, Vecto
 template <typename T>
 static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> rotate(const mat<4, 4, T> &m, const Vector::vec<3, T> &_axis, T angle, const Vector::vec<3, T> &center)
 {
-    // bugs in this function
-    return translate(rotate(translate(m, -center), _axis, angle), center);
+    // FIXME: bugs in this function
+    return translate_absolute(rotate(translate_absolute(m, -center), _axis, angle), center);
 }
 
 template <typename T>
@@ -66,7 +75,7 @@ static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> scale(mat<4, 4, T> const &m, Vector
 template <typename T>
 static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> scale(const mat<4, 4, T> &m, const Vector::vec<3, T> &v, const Vector::vec<3, T> &center)
 {
-    return translate(scale(translate(m, -center), v), center);
+    return translate_absolute(scale(translate_absolute(m, -center), v), center);
 }
 
 template <typename T>
