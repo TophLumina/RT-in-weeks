@@ -16,13 +16,13 @@ public:
     vector<shared_ptr<hittable>> objects;
 
     hittable_list() {}
-    hittable_list(shared_ptr<hittable> object) { add(object); }
+    hittable_list(shared_ptr<hittable> hittable) { add(hittable); }
 
     aabb bounding_box() const override { return bbox; }
 
     void translate(const vec3 &offset) override
     {
-        *m_transform = Math::Matrix::translate(*m_transform, offset);
+        *m_transform = Math::Matrix::translate(offset) * *m_transform;
         for (auto &object : objects)
             object->translate(offset);
 
@@ -32,7 +32,7 @@ public:
 
     void rotate(const vec3 &axis, double angle, const vec3 &center) override
     {
-        *m_transform = Math::Matrix::rotate(*m_transform, axis, angle, center);
+        *m_transform = Math::Matrix::rotate(axis, angle, center) * *m_transform;
         for (auto &object : objects)
             object->rotate(axis, angle, center);
 

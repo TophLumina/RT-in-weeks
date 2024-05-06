@@ -37,9 +37,15 @@ int main(int argc, char const *argv[])
     // cam.frame_duration = 1.0;
     clog << "Samplers: " << cam.samplers_per_pixel << '\n';
 
-    // cam.render(world, lights);
-    point3 a(1, 0, 0);
-    mat4 m = mat4(1.0);
-    m = rotate(m, vec3(0, 1, 0), degree2radius(90));
-    cout << transform(m, vec4(a, 1.0)) << '\n';
+    cam.render(world, lights);
+    // point3 a(1, 0, 0);
+    // point3 origin(-1, 0, 0);
+    // mat4 m1 = translate(-origin);
+    // mat4 m2 = rotate(vec3(0, 1, 0), degree2radius(90));
+    // mat4 m3 = translate( origin);
+    // cout << m1 << '\n';
+    // cout << m2 << '\n';
+    // cout << m3 << '\n';
+    // cout << m3 * m2 * m1 << '\n';
+    // cout << m3 * m2 * m1 * vec4(a, 1) << '\n';
 }

@@ -7,6 +7,13 @@ MATH_NAMESPACE_BEGIN
 MATRIX_NAMESPACE_BEGIN
 
 template <LENGTH_TYPE M, LENGTH_TYPE N, typename T>
+static MATH_FUNCTION_QUALIFIERS mat<M, N, T> identity()
+{
+    static_assert(M == N, "identity matrix is only defined for square matrices");
+    return mat<M, N, T>(static_cast<T>(1));
+}
+
+template <LENGTH_TYPE M, LENGTH_TYPE N, typename T>
 static MATH_FUNCTION_QUALIFIERS mat<M, N, T> abs(mat<M, N, T> const &m)
 {
     mat<M, N, T> result;

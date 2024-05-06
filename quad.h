@@ -48,7 +48,7 @@ public:
 
     void translate(const vec3 &offsets) override
     {
-        *m_transform = Math::Matrix::translate(*m_transform, offsets);
+        *m_transform = Math::Matrix::translate(offsets) * *m_transform;
         Q = Math::Matrix::transform(*m_transform, vec4(vertices[0], 1.0));
         D = dot(normal, Q);
 
@@ -58,7 +58,7 @@ public:
 
     void rotate(const vec3 &axis, double angle, const vec3 &center) override
     {
-        *m_transform = Math::Matrix::rotate(*m_transform, axis, angle, center);
+        *m_transform = Math::Matrix::rotate(axis, angle, center) * *m_transform;
         Q = Math::Matrix::transform(*m_transform, vec4(vertices[0], 1.0));
         u = Math::Matrix::transform(*m_transform, vec4(vertices[1] - vertices[0], 0.0));
         v = Math::Matrix::transform(*m_transform, vec4(vertices[3] - vertices[0], 0.0));

@@ -61,7 +61,7 @@ public:
 
     void translate(const vec3 &offsets) override
     {
-        *m_transform = Math::Matrix::translate(*m_transform, offsets);
+        *m_transform = Math::Matrix::translate(offsets) * *m_transform;
         center = Math::Matrix::transform(*m_transform, vec4(origin, 1.0));
 
         geometric_center = center;
@@ -72,7 +72,7 @@ public:
 
     void rotate(const vec3 &axis, double angle, const vec3 &center) override
     {
-        *m_transform = Math::Matrix::rotate(*m_transform, axis, angle, center);
+        *m_transform = Math::Matrix::rotate(axis, angle, center) * *m_transform;
         this->center = Math::Matrix::transform(*m_transform, vec4(origin, 1.0));
 
         geometric_center = this->center;
