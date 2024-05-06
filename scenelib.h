@@ -1,9 +1,11 @@
 #include "hittable_list.h"
-#include "rtweekend.h"
 #include "material.h"
 #include "quad.h"
+#include "rtweekend.h"
 #include "sphere.h"
+#include "vec.h"
 #include <memory>
+
 
 void cornell_box(hittable_list &world, hittable_list &lights);
 void cornell_box_modified(hittable_list &world, hittable_list &lights);
@@ -18,25 +20,27 @@ void cornell_box(hittable_list &world, hittable_list &lights)
     auto green = make_shared<lambertian>(color(0.12, 0.45, 0.15));
     auto light = make_shared<diffuse_directional_light>(color(15, 15, 15));
 
-    world.add(make_shared<quad>(point3(555, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), green));
-    world.add(make_shared<quad>(point3(0, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), red));
-    world.add(make_shared<quad>(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105), light));
-    world.add(make_shared<quad>(point3(0, 0, 0), vec3(555, 0, 0), vec3(0, 0, 555), white));
-    world.add(make_shared<quad>(point3(555, 555, 555), vec3(-555, 0, 0), vec3(0, 0, -555), white));
-    world.add(make_shared<quad>(point3(0, 0, 555), vec3(555, 0, 0), vec3(0, 555, 0), white));
+    world.add(make_shared<quad>(point3(555, 0, 0), point3(555, 555, 0), point3(555, 555, 555), point3(555, 0, 555), green));
+    world.add(make_shared<quad>(point3(0, 0, 0), point3(0, 0, 555), point3(0, 555, 555), point3(0, 555, 0), red));
+    world.add(make_shared<quad>(point3(343, 554, 332), point3(343, 554, 227), point3(213, 554, 227), point3(213, 554, 332), light));
+    world.add(make_shared<quad>(point3(0, 0, 0), point3(555, 0, 0), point3(555, 0, 555), point3(0, 0, 555), white));
+    world.add(make_shared<quad>(point3(555, 555, 555), point3(0, 555, 555), point3(0, 555, 0), point3(555, 555, 0), white));
+    world.add(make_shared<quad>(point3(0, 0, 555), point3(555, 0, 555), point3(555, 555, 555), point3(0, 555, 555), white));
 
     auto box1 = cube(point3(0, 0, 0), point3(165, 330, 165), white);
+    // box1->scale(vec3(0.5, 1, 0.5));
     box1->translate(vec3(265, 0, 295));
     box1->rotate(vec3(0, 1, 0), degree2radius(15));
     world.add(box1);
 
     auto box2 = cube(point3(0, 0, 0), point3(165, 165, 165), white);
+    // box2->scale(vec3(0.5, 1, 0.5));
     box2->translate(vec3(130, 0, 65));
     box2->rotate(vec3(0, 1, 0), degree2radius(-18));
     world.add(box2);
 
     auto m = shared_ptr<material>();
-    lights.add(make_shared<quad>(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105), m));
+    lights.add(make_shared<quad>(point3(343, 554, 332), point3(343, 554, 227), point3(213, 554, 227), point3(213, 554, 332), m));
 }
 
 void cornell_box_modified(hittable_list &world, hittable_list &lights)
@@ -48,12 +52,12 @@ void cornell_box_modified(hittable_list &world, hittable_list &lights)
     auto green = make_shared<lambertian>(color(0.12, 0.45, 0.15));
     auto light = make_shared<diffuse_directional_light>(color(15, 15, 15));
 
-    world.add(make_shared<quad>(point3(555, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), green));
-    world.add(make_shared<quad>(point3(0, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), red));
-    world.add(make_shared<quad>(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105), light));
-    world.add(make_shared<quad>(point3(0, 0, 0), vec3(555, 0, 0), vec3(0, 0, 555), white));
-    world.add(make_shared<quad>(point3(555, 555, 555), vec3(-555, 0, 0), vec3(0, 0, -555), white));
-    world.add(make_shared<quad>(point3(0, 0, 555), vec3(555, 0, 0), vec3(0, 555, 0), white));
+    world.add(make_shared<quad>(point3(555, 0, 0), point3(555, 555, 0), point3(555, 555, 555), point3(555, 0, 555), green));
+    world.add(make_shared<quad>(point3(0, 0, 0), point3(0, 0, 555), point3(0, 555, 555), point3(0, 555, 0), red));
+    world.add(make_shared<quad>(point3(343, 554, 332), point3(343, 554, 227), point3(213, 554, 227), point3(213, 554, 332), light));
+    world.add(make_shared<quad>(point3(0, 0, 0), point3(555, 0, 0), point3(555, 0, 555), point3(0, 0, 555), white));
+    world.add(make_shared<quad>(point3(555, 555, 555), point3(0, 555, 555), point3(0, 555, 0), point3(555, 555, 0), white));
+    world.add(make_shared<quad>(point3(0, 0, 555), point3(555, 0, 555), point3(555, 555, 555), point3(0, 555, 555), white));
 
     auto box1 = cube(point3(0, 0, 0), point3(165, 330, 165), aluminum);
     box1->translate(vec3(265, 0, 295));
@@ -64,5 +68,5 @@ void cornell_box_modified(hittable_list &world, hittable_list &lights)
     world.add(sphere1);
 
     auto m = shared_ptr<material>();
-    lights.add(make_shared<quad>(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105), m));
+    lights.add(make_shared<quad>(point3(343, 554, 332), point3(343, 554, 227), point3(213, 554, 227), point3(213, 554, 332), m));
 }

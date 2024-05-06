@@ -11,25 +11,12 @@
 class quad : public hittable
 {
 public:
+    // counter-clockwise order
     quad(const point3 &a, const point3 &b, const point3 &c, const point3 &d, shared_ptr<material> m) : vertices({a, b, c, d}), mat(m)
     {
         Q = vertices[0];
-        u = vertices[1] - vertices[0];
-        v = vertices[3] - vertices[0];
-
-        auto n = cross(u, v);
-        normal = normalize(n);
-        D = dot(normal, Q);
-        w = n / dot(n, n);
-        area = length(n);
-
-        geometric_center = Q + 0.5 * u + 0.5 * v;
-        update_bounding_box();
-    }
-
-    quad(const point3 &_Q, const vec3 &_u, const vec3 &_v, shared_ptr<material> m) : Q(_Q), u(_u), v(_v), mat(m)
-    {
-        vertices = {Q, Q + u, Q + u + v, Q + v};
+        u = vertices[3] - vertices[0];
+        v = vertices[1] - vertices[0];
 
         auto n = cross(u, v);
         normal = normalize(n);
@@ -49,7 +36,7 @@ public:
     void translate(const vec3 &offsets) override
     {
         auto m_translation = Math::Matrix::translate(offsets);
-        *m_transform = Math::Matrix::translate(offsets) * *m_transform;
+        *m_transform = m_translation * *m_transform;
         Q += offsets;
         D = dot(normal, Q);
 
@@ -59,13 +46,31 @@ public:
 
     void scale(const vec3 &scalar, const vec3 &center) override
     {
-        
+        auto m_scaling = Math::Matrix::scale(scalar, center);
+        *m_transform = m_scaling * *m_transform;
+        Q = m_scaling * vec4(Q, 1.0);
+        u = m_scaling * vec4(u, 0.0);
+        v = m_scaling * vec4(v, 0.0);
+
+        auto n = cross(u, v);
+        // The normal is scaled by the inverse of the transpose of the scaling matrix
+        normal = inverse(transpose(m_scaling)) * vec4(normal, 0.0);
+        D = dot(normal, Q);
+        w = n / dot(n, n);
+
+        geometric_center = Q + 0.5 * u + 0.5 * v;
+        update_bounding_box();
+    }
+
+    void scale(const vec3 &scalar) override
+    {
+        scale(scalar, geometric_center);
     }
 
     void rotate(const vec3 &axis, double angle, const vec3 &center) override
     {
         auto m_rotation = Math::Matrix::rotate(axis, angle, center);
-        *m_transform = Math::Matrix::rotate(axis, angle, center) * *m_transform;
+        *m_transform = m_rotation * *m_transform;
         Q = m_rotation * vec4(Q, 1.0);
         u = m_rotation * vec4(u, 0.0);
         v = m_rotation * vec4(v, 0.0);
@@ -175,12 +180,13 @@ inline shared_ptr<hittable_list> cube(const point3 &a, const point3 &b, shared_p
     auto dy = vec3(0, max.y - min.y, 0);
     auto dz = vec3(0, 0, max.z - min.z);
 
-    faces->add(make_shared<quad>(point3(min.x, min.y, max.z), dx, dy, mat));  // front
-    faces->add(make_shared<quad>(point3(max.x, min.y, max.z), -dz, dy, mat)); // right
-    faces->add(make_shared<quad>(point3(max.x, min.y, min.z), -dx, dy, mat)); // back
-    faces->add(make_shared<quad>(point3(min.x, min.y, min.z), dz, dy, mat));  // left
-    faces->add(make_shared<quad>(point3(min.x, max.y, max.z), dx, -dz, mat)); // top
-    faces->add(make_shared<quad>(point3(min.x, min.y, min.z), dx, dz, mat));  // bottom
+    // Construct the 6 faces of the cube
+    faces->add(make_shared<quad>(min, min + dx, min + dx + dy, min + dy, mat));
+    faces->add(make_shared<quad>(min, min + dx, min + dx + dz, min + dz, mat));
+    faces->add(make_shared<quad>(min, min + dy, min + dy + dz, min + dz, mat));
+    faces->add(make_shared<quad>(max, max - dx, max - dx - dy, max - dy, mat));
+    faces->add(make_shared<quad>(max, max - dx, max - dx - dz, max - dz, mat));
+    faces->add(make_shared<quad>(max, max - dy, max - dy - dz, max - dz, mat));
 
     return faces;
 }

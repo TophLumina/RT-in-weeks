@@ -223,7 +223,7 @@ static MATH_FUNCTION_QUALIFIERS mat<M, N, T> inverse(mat<M, N, T> const &m)
     {
         throw std::runtime_error("matrix is not invertible");
     }
-    return adjugate(m) / det;
+    return (adjugate(m) /= det);
 }
 
 // TODO:: extend this to support non-square matrices

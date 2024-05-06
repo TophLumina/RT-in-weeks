@@ -1,35 +1,24 @@
 #pragma once
 
 #include "hittable.h"
+#include <array>
 
 class triangle : public hittable
 {
 public:
-    triangle(const point3 &_Q, const vec3 &_u, const vec3 &_v, shared_ptr<material> m) : Q(_Q), u(_u), v(_v), mat(m)
+    triangle(const point3 &a, const point3 &b, const point3 &c, shared_ptr<material> m) : vertices({a, b, c}), mat(m)
     {
+        Q = vertices[0];
+        u = vertices[1] - vertices[0];
+        v = vertices[2] - vertices[0];
+
         auto n = cross(u, v);
         normal = normalize(n);
         D = dot(normal, Q);
         w = n / dot(n, n);
         area = length(n) / 2;
 
-        set_bounding_box();
-    }
-
-    virtual void set_bounding_box()
-    {
-        bbox = aabb(Q, Q + u + v).pad();
-    }
-
-    // Given the hit point in plane_UV coordinates, return false if outside the primitive, otherwise fill the hit_info with UV coords and return true
-    virtual bool is_interior(double a, double b, hit_info &hit) const
-    {
-        if (a < 0 || b < 0 || a > 1 || b > 1 || a + b > 1 || a + b < 0)
-            return false;
-
-        hit.u = a;
-        hit.v = b;
-        return true;
+        update_bounding_box();
     }
 
     aabb bounding_box() const override
@@ -90,6 +79,7 @@ public:
     }
 
 private:
+    std::array<point3, 3> vertices;
     point3 Q;
     vec3 u, v;
     shared_ptr<material> mat;
@@ -98,4 +88,20 @@ private:
     double D;
     vec3 w;
     double area;
+
+    virtual void update_bounding_box()
+    {
+        bbox = aabb(Q, Q + u + v).pad();
+    }
+
+    // Given the hit point in plane_UV coordinates, return false if outside the primitive, otherwise fill the hit_info with UV coords and return true
+    virtual bool is_interior(double a, double b, hit_info &hit) const
+    {
+        if (a < 0 || b < 0 || a > 1 || b > 1 || a + b > 1 || a + b < 0)
+            return false;
+
+        hit.u = a;
+        hit.v = b;
+        return true;
+    }
 };

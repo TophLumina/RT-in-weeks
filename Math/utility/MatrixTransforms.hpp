@@ -25,7 +25,7 @@ static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> rotate(Vector::vec<3, T> const &_ax
     T const sin = Math::sin(angle);
     T const invCos = static_cast<T>(1) - cos;
 
-    mat<4, 4, T> result(0);
+    mat<4, 4, T> result = identity<4, 4, T>();
     result[0][0] = cos + axis[0] * axis[0] * invCos;
     result[1][0] = axis[0] * axis[1] * invCos - axis[2] * sin;
     result[2][0] = axis[0] * axis[2] * invCos + axis[1] * sin;
@@ -35,7 +35,6 @@ static MATH_FUNCTION_QUALIFIERS mat<4, 4, T> rotate(Vector::vec<3, T> const &_ax
     result[0][2] = axis[2] * axis[0] * invCos - axis[1] * sin;
     result[1][2] = axis[2] * axis[1] * invCos + axis[0] * sin;
     result[2][2] = cos + axis[2] * axis[2] * invCos;
-    result[3][3] = static_cast<T>(1);
     return result;
 }
 

@@ -31,10 +31,26 @@ public:
         bbox = bbox + offset;
     }
 
+    void scale(const vec3 &scalar, const vec3 &center) override
+    {
+        auto m_scaling = Math::Matrix::scale(scalar, center);
+        *m_transform = m_scaling * *m_transform;
+        for (auto &object : objects)
+            object->scale(scalar, center);
+
+        geometric_center = m_scaling * vec4(geometric_center, 1.0);
+        update_bounding_box();
+    }
+
+    void scale(const vec3 &scalar) override
+    {
+        scale(scalar, geometric_center);
+    }
+
     void rotate(const vec3 &axis, double angle, const vec3 &center) override
     {
         auto m_rotation = Math::Matrix::rotate(axis, angle, center);
-        *m_transform = Math::Matrix::rotate(axis, angle, center) * *m_transform;
+        *m_transform = m_rotation * *m_transform;
         for (auto &object : objects)
             object->rotate(axis, angle, center);
 
