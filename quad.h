@@ -48,23 +48,30 @@ public:
 
     void translate(const vec3 &offsets) override
     {
+        auto m_translation = Math::Matrix::translate(offsets);
         *m_transform = Math::Matrix::translate(offsets) * *m_transform;
-        Q = Math::Matrix::transform(*m_transform, vec4(vertices[0], 1.0));
+        Q += offsets;
         D = dot(normal, Q);
 
         geometric_center = Q + 0.5 * u + 0.5 * v;
         bbox = bbox + offsets;
     }
 
+    void scale(const vec3 &scalar, const vec3 &center) override
+    {
+        
+    }
+
     void rotate(const vec3 &axis, double angle, const vec3 &center) override
     {
+        auto m_rotation = Math::Matrix::rotate(axis, angle, center);
         *m_transform = Math::Matrix::rotate(axis, angle, center) * *m_transform;
-        Q = Math::Matrix::transform(*m_transform, vec4(vertices[0], 1.0));
-        u = Math::Matrix::transform(*m_transform, vec4(vertices[1] - vertices[0], 0.0));
-        v = Math::Matrix::transform(*m_transform, vec4(vertices[3] - vertices[0], 0.0));
+        Q = m_rotation * vec4(Q, 1.0);
+        u = m_rotation * vec4(u, 0.0);
+        v = m_rotation * vec4(v, 0.0);
 
         auto n = cross(u, v);
-        normal = Math::Matrix::transform(*m_transform, vec4(normal, 0.0));
+        normal = m_rotation * vec4(normal, 0.0);
         D = dot(normal, Q);
         w = n / dot(n, n);
 

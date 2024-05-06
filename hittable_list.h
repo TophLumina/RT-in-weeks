@@ -22,21 +22,23 @@ public:
 
     void translate(const vec3 &offset) override
     {
-        *m_transform = Math::Matrix::translate(offset) * *m_transform;
+        auto m_translation = Math::Matrix::translate(offset);
+        *m_transform = m_translation * *m_transform;
         for (auto &object : objects)
             object->translate(offset);
 
-        geometric_center = Math::Matrix::transform(*m_transform, vec4(geometric_center, 1.0));
+        geometric_center += offset;
         bbox = bbox + offset;
     }
 
     void rotate(const vec3 &axis, double angle, const vec3 &center) override
     {
+        auto m_rotation = Math::Matrix::rotate(axis, angle, center);
         *m_transform = Math::Matrix::rotate(axis, angle, center) * *m_transform;
         for (auto &object : objects)
             object->rotate(axis, angle, center);
 
-        geometric_center = Math::Matrix::transform(*m_transform, vec4(geometric_center, 1.0));
+        geometric_center = m_rotation * vec4(geometric_center, 1.0);
         update_bounding_box();
     }
 
