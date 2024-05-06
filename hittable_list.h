@@ -27,7 +27,7 @@ public:
             object->translate(offset);
 
         geometric_center = Math::Matrix::transform(*m_transform, vec4(geometric_center, 1.0));
-        update_bounding_box();
+        bbox = bbox + offset;
     }
 
     void rotate(const vec3 &axis, double angle, const vec3 &center) override

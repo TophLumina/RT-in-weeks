@@ -65,7 +65,7 @@ public:
         center = Math::Matrix::transform(*m_transform, vec4(origin, 1.0));
 
         geometric_center = center;
-        update_bounding_box();
+        bbox = bbox + offsets;
     }
 
     // no scaling for sphere

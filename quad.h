@@ -53,7 +53,7 @@ public:
         D = dot(normal, Q);
 
         geometric_center = Q + 0.5 * u + 0.5 * v;
-        update_bounding_box();
+        bbox = bbox + offsets;
     }
 
     void rotate(const vec3 &axis, double angle, const vec3 &center) override
