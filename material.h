@@ -22,7 +22,7 @@ public:
     virtual ~material() = default;
 
     virtual bool is_emissive() const { return false; }
-    
+
     virtual color emitter(const ray &r_in, const hit_info &hit, double u, double v, const point3 &p) const
     {
         return color(0, 0, 0);
@@ -39,7 +39,7 @@ unsigned int material::index = 1; // 0 is reserved for the background
 class lambertian : public material
 {
 public:
-    lambertian(const shared_ptr<texture> _tex) : albedo(_tex) {}
+    lambertian(const shared_ptr<Texture> _tex) : albedo(_tex) {}
     lambertian(const color &c) : albedo(make_shared<solid_color>(c)) {}
 
     bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
@@ -58,14 +58,14 @@ public:
     }
 
 private:
-    shared_ptr<texture> albedo;
+    shared_ptr<Texture> albedo;
 };
 
 // Diffuse material scattering weighted by random directions
 class diffuse : public material
 {
 public:
-    diffuse(const shared_ptr<texture> _tex) : albedo(_tex) {}
+    diffuse(const shared_ptr<Texture> _tex) : albedo(_tex) {}
     diffuse(const color &c) : albedo(make_shared<solid_color>(c)) {}
 
     bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
@@ -83,13 +83,13 @@ public:
     }
 
 private:
-    shared_ptr<texture> albedo;
+    shared_ptr<Texture> albedo;
 };
 
 class metal : public material
 {
 public:
-    metal(const shared_ptr<texture> _tex, double f) : albedo(_tex), fuzz(f < 1 ? f : 1) {}
+    metal(const shared_ptr<Texture> _tex, double f) : albedo(_tex), fuzz(f < 1 ? f : 1) {}
     metal(const color &c, double f) : albedo(make_shared<solid_color>(c)), fuzz(f < 1 ? f : 1) {}
 
     bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
@@ -105,7 +105,7 @@ public:
     }
 
 private:
-    shared_ptr<texture> albedo;
+    shared_ptr<Texture> albedo;
     double fuzz;
 };
 
@@ -159,7 +159,7 @@ private:
 class isotropic : public material
 {
 public:
-    isotropic(shared_ptr<texture> _tex) : albedo(_tex) {}
+    isotropic(shared_ptr<Texture> _tex) : albedo(_tex) {}
     isotropic(color c) : albedo(make_shared<solid_color>(c)) {}
 
     bool scatter(const ray &r_in, const hit_info &hit, scatter_info &sinfo) const override
@@ -178,13 +178,13 @@ public:
     }
 
 private:
-    shared_ptr<texture> albedo;
+    shared_ptr<Texture> albedo;
 };
 
 class diffuse_directional_light : public material
 {
 public:
-    diffuse_directional_light(shared_ptr<texture> e) : emit(e) {}
+    diffuse_directional_light(shared_ptr<Texture> e) : emit(e) {}
     diffuse_directional_light(color c) : emit(make_shared<solid_color>(c)) {}
 
     bool is_emissive() const override { return true; }
@@ -197,5 +197,6 @@ public:
     }
 
 private:
-    shared_ptr<texture> emit;
-};;
+    shared_ptr<Texture> emit;
+};
+;

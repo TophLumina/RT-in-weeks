@@ -1,18 +1,20 @@
 #pragma once
 
+#include "Math/utility/MatrixOperations.hpp"
+#include "Vertex.h"
 #include "hittable.h"
 #include <array>
 
 class triangle : public hittable
 {
 public:
-    triangle(const point3 &a, const point3 &b, const point3 &c, shared_ptr<material> m) : vertices({a, b, c}), mat(m)
+    triangle(const Vertex &a, const Vertex &b, const Vertex &c, shared_ptr<material> m) : vertices({a, b, c}), mat(m)
     {
-        Q = vertices[0];
-        u = vertices[1] - vertices[0];
-        v = vertices[2] - vertices[0];
+        Q = vertices[0].Position;
+        u = vertices[1].Position - vertices[0].Position;
+        v = vertices[2].Position - vertices[0].Position;
 
-        auto n = cross(u, v);
+        auto n = a.Normal + b.Normal + c.Normal;
         normal = normalize(n);
         D = dot(normal, Q);
         w = n / dot(n, n);
@@ -47,7 +49,8 @@ public:
 
         auto n = cross(u, v);
         // The normal is scaled by the inverse of the transpose of the scaling matrix
-        normal = inverse(transpose(m_scaling)) * vec4(normal, 0.0);
+        normal = transpose(adjugate(m_scaling)) * vec4(normal, 0.0);
+        normal = normalize(normal);
         D = dot(normal, Q);
         w = n / dot(n, n);
         area = length(n) / 2;
@@ -136,7 +139,7 @@ public:
     }
 
 private:
-    std::array<point3, 3> vertices;
+    std::array<Vertex, 3> vertices;
     point3 Q;
     vec3 u, v;
     shared_ptr<material> mat;
@@ -157,8 +160,8 @@ private:
         if (a < 0 || b < 0 || a > 1 || b > 1 || a + b > 1 || a + b < 0)
             return false;
 
-        hit.u = a;
-        hit.v = b;
+        hit.u = a * (vertices[1].uv.x - vertices[0].uv.x) + vertices[0].uv.x;
+        hit.v = b * (vertices[2].uv.y - vertices[0].uv.y) + vertices[0].uv.y;
         return true;
     }
 };

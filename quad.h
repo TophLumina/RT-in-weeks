@@ -54,7 +54,8 @@ public:
 
         auto n = cross(u, v);
         // The normal is scaled by the inverse of the transpose of the scaling matrix
-        normal = inverse(transpose(m_scaling)) * vec4(normal, 0.0);
+        normal = transpose(adjugate(m_scaling)) * vec4(normal, 0.0);
+        normal = normalize(normal);
         D = dot(normal, Q);
         w = n / dot(n, n);
         area = length(n);
