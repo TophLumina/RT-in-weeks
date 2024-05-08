@@ -17,6 +17,7 @@ public:
 
     hittable_list() {}
     hittable_list(shared_ptr<hittable> hittable) { add(hittable); }
+    virtual ~hittable_list() = default;
 
     aabb bounding_box() const override { return bbox; }
 
@@ -86,7 +87,7 @@ public:
         bbox = aabb(bbox, object_list->bounding_box());
     }
 
-    bool hit(const ray &r, interval ray_t, hit_info &hit) const override
+    virtual bool hit(const ray &r, interval ray_t, hit_info &hit) const override
     {
         hit_info tmp;
         bool hit_any = false;
@@ -150,7 +151,7 @@ public:
     shared_ptr<hittable_list> flattened_for_bvh() const
     {
         auto list = make_shared<hittable_list>();
-        list->flatten_list(make_shared<hittable_list>(*this));
+        flatten_list(make_shared<hittable_list>(*this), list);
 
         return list;
     }
@@ -167,18 +168,21 @@ private:
 
     // FIXME: Bugs in hittable_list flatten method
     // Flatten the nested hittable_list for full BVH Tree construction
-    void flatten_list(shared_ptr<hittable_list> src_list)
+    shared_ptr<hittable> flatten_list(shared_ptr<hittable_list> src, shared_ptr<hittable_list> des) const
     {
-        for (const auto &object : src_list->objects)
+        for (const auto &object : src->objects)
         {
             auto nested_list = std::dynamic_pointer_cast<hittable_list>(object);
             if (nested_list)
-                flatten_list(nested_list);
+            {
+                flatten_list(nested_list, des); // Recursively flatten the nested hittable_list
+            }
             else
-                add(object);
+            {
+                des->add(object); // Add non-nested objects to the destination list
+            }
         }
 
-        geometric_center = (geometric_center * (objects.size() - src_list->objects.size()) + src_list->geometric_center * src_list->objects.size()) / objects.size();
-        bbox = aabb(bbox, src_list->bounding_box());
+        return nullptr;
     }
 };

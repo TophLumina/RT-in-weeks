@@ -10,7 +10,6 @@
 #include <assimp/Importer.hpp>
 #include <assimp/types.h>
 
-#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -34,7 +33,6 @@ public:
     {
         setupMesh();
     }
-
 private:
     void setupMesh()
     {
@@ -66,6 +64,10 @@ private:
             
             material = make_shared<lambertian>(std::static_pointer_cast<Texture>(textures[diffuseIdx]));
         }
-        material = make_shared<lambertian>(color(1,0,1));
+
+        if (!material)
+        {
+            material = make_shared<lambertian>(color(1, 0, 1));
+        }
     }
 };

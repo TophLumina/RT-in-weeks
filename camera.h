@@ -25,7 +25,7 @@ class camera
 public:
     double aspect_ratio = 1.0;   // Ratio of image width over height
     int image_width = 1;         // Rendered image width in pixel count
-    int samplers_per_pixel = 64; // Amount of samplers for each pixel
+    int samplers_per_pixel = 1; // Amount of samplers for each pixel
     int shadow_samples = 16;     // Amount of samplers for each shadow ray
     int max_depth = 20;          // Ray bounce limit
 

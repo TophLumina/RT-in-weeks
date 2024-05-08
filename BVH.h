@@ -14,10 +14,8 @@ public:
 
     // original method
     // should never be called unless the list is already been flattened
-    bvh_node(const vector<shared_ptr<hittable>> &src_objects, size_t start, size_t end)
+    bvh_node(const vector<shared_ptr<hittable>> &objects, size_t start, size_t end)
     {
-        auto objects = src_objects;
-
         int axis = random_int(0, 2);
         auto comparator = (axis == 0)   ? box_x_compare
                           : (axis == 1) ? box_y_compare
@@ -47,7 +45,7 @@ public:
             auto mid = start + object_span / 2;
             // no need to sort, just cut the vec by half will do the trick
             // but std::sort() is still slightly faster than our method :(
-            kth_partition(objects, axis, start, end - 1, mid);
+            // kth_partition(objects, axis, start, end - 1, mid);
             // std::sort(objects.begin() + start, objects.begin() + end, comparator);
 
             left = make_shared<bvh_node>(objects, start, mid);
@@ -64,7 +62,7 @@ public:
 
         // when loop into leaf node, right/left should be primitive
         bool hit_l = left->hit(r, ray_t, hit);
-        bool hit_r = right->hit(r, interval(ray_t.min, /*if left hit, then check any hit before left hit*/ hit_l ? hit.t : ray_t.max), hit);
+        bool hit_r = right->hit(r, interval(ray_t.min, hit_l ? hit.t : ray_t.max), hit);
 
         return hit_l || hit_r;
     }

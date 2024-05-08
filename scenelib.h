@@ -12,7 +12,7 @@ void model_test(hittable_list &world, hittable_list &lights);
 void cornell_box(hittable_list &world, hittable_list &lights);
 void cornell_box_modified(hittable_list &world, hittable_list &lights);
 
-auto SceneFunc = model_test;
+auto SceneFunc = cornell_box;
 
 void model_test(hittable_list &world, hittable_list &lights)
 {
