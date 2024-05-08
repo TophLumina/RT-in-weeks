@@ -28,6 +28,6 @@ aux_source_directory(. DIR_SRC)
 add_executable(${PROJECT_NAME} ${DIR_SRC})
 
 # Assimp
-find_package(assimp REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${ASSIMP_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${ASSIMP_INCLUDE_DIRS})

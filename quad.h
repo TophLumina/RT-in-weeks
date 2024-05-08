@@ -57,6 +57,7 @@ public:
         normal = inverse(transpose(m_scaling)) * vec4(normal, 0.0);
         D = dot(normal, Q);
         w = n / dot(n, n);
+        area = length(n);
 
         geometric_center = Q + 0.5 * u + 0.5 * v;
         update_bounding_box();

@@ -26,6 +26,63 @@ public:
         return bbox;
     }
 
+    void translate(const vec3 &offset) override
+    {
+        auto m_translation = Math::Matrix::translate(offset);
+        *m_transform = m_translation * *m_transform;
+        Q += offset;
+        D = dot(normal, Q);
+
+        geometric_center = Q + (u + v) / 3;
+        bbox = bbox + offset;
+    }
+
+    void scale(const vec3 &scalar, const vec3 &center) override
+    {
+        auto m_scaling = Math::Matrix::scale(scalar, center);
+        *m_transform = m_scaling * *m_transform;
+        Q = m_scaling * vec4(Q, 1.0);
+        u = m_scaling * vec4(u, 0.0);
+        v = m_scaling * vec4(v, 0.0);
+
+        auto n = cross(u, v);
+        // The normal is scaled by the inverse of the transpose of the scaling matrix
+        normal = inverse(transpose(m_scaling)) * vec4(normal, 0.0);
+        D = dot(normal, Q);
+        w = n / dot(n, n);
+        area = length(n) / 2;
+
+        geometric_center = Q + (u + v) / 3;
+        update_bounding_box();
+    }
+
+    void scale(const vec3 &scalar) override
+    {
+        scale(scalar, geometric_center);
+    }
+
+    void rotate(const vec3 &axis, double angle, const vec3 &center) override
+    {
+        auto m_rotation = Math::Matrix::rotate(axis, angle, center);
+        *m_transform = m_rotation * *m_transform;
+        Q = m_rotation * vec4(Q, 1.0);
+        u = m_rotation * vec4(u, 0.0);
+        v = m_rotation * vec4(v, 0.0);
+
+        auto n = cross(u, v);
+        normal = m_rotation * vec4(normal, 0.0);
+        D = dot(normal, Q);
+        w = n / dot(n, n);
+
+        geometric_center = Q + (u + v) / 3;
+        update_bounding_box();
+    }
+
+    void rotate(const vec3 &axis, double angle) override
+    {
+        rotate(axis, angle, geometric_center);
+    }
+
     bool hit(const ray &r, interval ray_t, hit_info &hit) const override
     {
         auto denom = dot(normal, r.direction());
