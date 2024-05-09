@@ -146,7 +146,6 @@ public:
         return objects[random_int(0, objects.size() - 1)];
     }
 
-    // FIXME: Bugs in hittable_list flatten method
     // Flatten the nested hittable_list for full BVH Tree construction
     shared_ptr<hittable_list> flattened_for_bvh() const
     {
@@ -166,7 +165,6 @@ private:
             bbox = aabb(bbox, object->bounding_box());
     }
 
-    // FIXME: Bugs in hittable_list flatten method
     // Flatten the nested hittable_list for full BVH Tree construction
     shared_ptr<hittable> flatten_list(shared_ptr<hittable_list> src, shared_ptr<hittable_list> des) const
     {

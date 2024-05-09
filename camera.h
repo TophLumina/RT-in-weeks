@@ -11,6 +11,7 @@
 #include <thread>
 #include <vector>
 
+#include "hittable.h"
 #include "rtweekend.h"
 #include "FrameBuffer.h"
 #include "PDF.h"
@@ -18,16 +19,17 @@
 #include "denoiser.h"
 #include "hittable_list.h"
 #include "material.h"
+#include "Reservoir.h"
 
 using namespace std;
 class camera
 {
 public:
     double aspect_ratio = 1.0;   // Ratio of image width over height
-    int image_width = 1;         // Rendered image width in pixel count
-    int samplers_per_pixel = 1; // Amount of samplers for each pixel
-    int shadow_samples = 16;     // Amount of samplers for each shadow ray
-    int max_depth = 20;          // Ray bounce limit
+    unsigned int image_width = 1;         // Rendered image width in pixel count
+    unsigned int samplers_per_pixel = 16;  // Amount of samplers for each pixel
+    unsigned int shadow_samples = 16;     // Amount of samplers for each shadow ray
+    unsigned int max_depth = 20;          // Ray bounce limit
 
     double vfov = 90;                   // Vertical field of view
     point3 lookfrom = point3(0, 0, -1); // Point where camera is looking from
@@ -38,6 +40,8 @@ public:
     double focus_dist = 10;      // Distance form camera look_from point to perfect focus plane
     double frame_duration = 1.0; // Shutter opening time
 
+    unsigned int reservoir_size = 8; // Reservoir size for each pixel
+
     color background = color(0, 0, 0); // Scene background color (more like env light actually, could add HDRI or cube_map support someday)
 
     // Buffers
@@ -45,6 +49,7 @@ public:
     FrameBuffer<point3> position_buffer;
     FrameBuffer<vec3> normal_buffer;
     FrameBuffer<vec3> index_buffer;
+    FrameBuffer<Reservoir<hittable>> reservoir_buffer;
 
     // Denoiser
     Denoiser denoiser = Denoiser(1.44, 64, pool);
@@ -182,6 +187,7 @@ private:
                                           { return (1.0 - Math::Vector::dot(a, b)); });
         index_buffer = FrameBuffer<vec3>(image_width, image_height, vec3(0, 0, 0), [](const vec3 &a, const vec3 &b) -> double
                                          { return (a.x == b.x && a.y == b.y) ? 0 : 1; });
+        reservoir_buffer = FrameBuffer<Reservoir<hittable>>(image_width, image_height, Reservoir<hittable>(reservoir_size));
     }
 
     // Return a random offset in the square around pixel, given two sub-pixel indexes

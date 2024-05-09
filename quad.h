@@ -154,7 +154,7 @@ private:
 
     void update_bounding_box()
     {
-        bbox = aabb(Q, Q + u + v).pad();
+        bbox = aabb(aabb(Q, Q + u + v), aabb(Q + u, Q + v)).pad();
     }
 
     // Given the hit point in plane_UV coordinates, return false if outside the primitive, otherwise fill the hit_info with UV coords and return true
