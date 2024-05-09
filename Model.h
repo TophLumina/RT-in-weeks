@@ -25,7 +25,7 @@ public:
         loadModel(path);
     }
 private:
-    std::vector<shared_ptr<MeshTexture>> textures_loaded;
+    std::vector<shared_ptr<MeshTexture>> textures_cached;
 
     void loadModel(std::string path)
     {
@@ -158,11 +158,11 @@ private:
             mat->GetTexture(type, i, &path);
 
             bool skip = false;
-            for (unsigned int j = 0; j < textures_loaded.size(); ++j)
+            for (unsigned int j = 0; j < textures_cached.size(); ++j)
             {
-                if (std::strcmp(textures_loaded[j]->path.data(), path.C_Str()) == 0)
+                if (std::strcmp(textures_cached[j]->path.data(), path.C_Str()) == 0)
                 {
-                    textures.push_back(textures_loaded[j]);
+                    textures.push_back(textures_cached[j]);
                     skip = true;
                     break;
                 }
@@ -174,7 +174,7 @@ private:
                 texture->type = typeName;
                 texture->path = path.C_Str();
                 textures.push_back(texture);
-                textures_loaded.push_back(texture);
+                textures_cached.push_back(texture);
             }
         }
 

@@ -59,10 +59,9 @@ private:
             if (textures[i]->type == "texture_diffuse")
             {
                 diffuseIdx = i;
+                material = make_shared<lambertian>(std::static_pointer_cast<Texture>(textures[diffuseIdx]));
                 break;
             }
-            
-            material = make_shared<lambertian>(std::static_pointer_cast<Texture>(textures[diffuseIdx]));
         }
 
         if (!material)

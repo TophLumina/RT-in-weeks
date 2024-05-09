@@ -1,7 +1,6 @@
 #pragma once
 
 #include <algorithm>
-#include <memory>
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
@@ -9,7 +8,7 @@
 template <typename T, typename F = double>
 struct ReservoirItem
 {
-    std::shared_ptr<T> value;
+    T value;
     F weight;
 };
 
