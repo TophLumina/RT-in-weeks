@@ -65,8 +65,6 @@ private:
         }
 
         if (!material)
-        {
             material = make_shared<lambertian>(color(1, 0, 1));
-        }
     }
 };

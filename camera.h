@@ -52,8 +52,15 @@ public:
     FrameBuffer<vec3> index_buffer;
     FrameBuffer<Reservoir<shared_ptr<hittable>>> reservoir_buffer;
 
+    // Buffers for TAA like method
+    FrameBuffer<color> color_buffer_prev;
+    FrameBuffer<point3> position_buffer_prev;
+    FrameBuffer<vec3> normal_buffer_prev;
+    FrameBuffer<vec3> index_buffer_prev;
+    FrameBuffer<Reservoir<shared_ptr<hittable>>> reservoir_buffer_prev;
+
     // Denoiser
-    Denoiser denoiser = Denoiser(1.44, 64, pool);
+    Denoiser denoiser = Denoiser(1.2, 8, pool);
 
     void render(const hittable &world, const hittable_list &lights)
     {

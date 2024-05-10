@@ -9,23 +9,23 @@
 class Denoiser
 {
 public:
-    Denoiser(double kernal_radius, int samplers, ThreadPool &pool) : kernal_radius(kernal_radius), samplers(samplers), pool(pool) {}
+    Denoiser(double kernal_radius, unsigned int samplers, ThreadPool &pool) : kernal_radius(kernal_radius), samplers(samplers), pool(pool) {}
 
     template <typename... Args>
     void denoise(FrameBuffer<color> &src_color, const FrameBuffer<Args> &...buffers)
     {
         FrameBuffer<color> result = src_color;
 
-        for (int i = 0; i < src_color.height; ++i)
+        for (unsigned int i = 0; i < src_color.height; ++i)
         {
-            for (int j = 0; j < src_color.width; ++j)
+            for (unsigned int j = 0; j < src_color.width; ++j)
             {
-                futures.push(pool.Submit([&](int i, int j)
+                futures.push(pool.Submit([&](unsigned int i, unsigned int j)
                 {
                     // For each pixel, search its neighbors and use it to weight the denoising
                     double weight_sum = 0;
 
-                    for (int s = 0; s < samplers; ++s)
+                    for (unsigned int s = 0; s < samplers; ++s)
                     {
                         vec2d offsets = Math::Vector::random_disk(kernal_radius);
                         vec2i coords = vec2d(i, j) + offsets + 0.5;
@@ -34,6 +34,8 @@ public:
                         {
                             if (i == coords.x && j == coords.y)
                             {
+                                weight_sum += 1;
+                                result.data[i][j] += src_color.data[coords.x][coords.y];
                                 continue;
                             }
 
@@ -63,7 +65,7 @@ public:
 
 private:
     double kernal_radius;
-    int samplers;
+    unsigned int samplers;
     ThreadPool &pool;
     std::queue<std::future<void>> futures;
 };

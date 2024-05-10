@@ -172,13 +172,9 @@ private:
         {
             auto nested_list = std::dynamic_pointer_cast<hittable_list>(object);
             if (nested_list)
-            {
                 flatten_list(nested_list, des); // Recursively flatten the nested hittable_list
-            }
             else
-            {
                 des->add(object); // Add non-nested objects to the destination list
-            }
         }
 
         return nullptr;

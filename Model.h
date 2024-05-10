@@ -44,9 +44,7 @@ private:
         processNode(scene->mRootNode, scene);
 
         for (auto &mesh : meshes)
-        {
             add(std::static_pointer_cast<hittable_list>(mesh));
-        }
     }
 
     void processNode(aiNode *node, const aiScene *scene)
@@ -58,9 +56,7 @@ private:
         }
 
         for (unsigned int i = 0; i < node->mNumChildren; ++i)
-        {
             processNode(node->mChildren[i], scene);
-        }
     }
 
     shared_ptr<Mesh> processMesh(aiMesh *mesh, const aiScene *scene)
@@ -119,9 +115,7 @@ private:
                 }
             }
             else
-            {
                 vertex.uv = vec2(0.0f, 0.0f);
-            }
 
             vertices.push_back(vertex);
         }
@@ -130,9 +124,7 @@ private:
         {
             aiFace face = mesh->mFaces[i];
             for (unsigned int j = 0; j < face.mNumIndices; ++j)
-            {
                 indices.push_back(face.mIndices[j]);
-            }
         }
 
         if (mesh->mMaterialIndex >= 0)

@@ -14,7 +14,8 @@ public:
         u = vertices[1].Position - vertices[0].Position;
         v = vertices[2].Position - vertices[0].Position;
 
-        auto n = a.Normal + b.Normal + c.Normal;
+        // auto n = a.Normal + b.Normal + c.Normal;
+        auto n = cross(u, v);
         normal = normalize(n);
         D = dot(normal, Q);
         w = n / dot(n, n);
@@ -151,7 +152,7 @@ private:
 
     virtual void update_bounding_box()
     {
-        bbox = aabb(Q, Q + u + v).pad();
+        bbox = aabb(aabb(Q, Q + u + v), aabb(Q + u, Q + v)).pad();
     }
 
     // Given the hit point in plane_UV coordinates, return false if outside the primitive, otherwise fill the hit_info with UV coords and return true
@@ -160,8 +161,11 @@ private:
         if (a < 0 || b < 0 || a > 1 || b > 1 || a + b > 1 || a + b < 0)
             return false;
 
-        hit.u = a * (vertices[1].uv.x - vertices[0].uv.x) + vertices[0].uv.x;
-        hit.v = b * (vertices[2].uv.y - vertices[0].uv.y) + vertices[0].uv.y;
+        auto uv = vertices[0].uv + a * (vertices[1].uv - vertices[0].uv) + b * (vertices[2].uv - vertices[0].uv);
+        
+        hit.u = uv.x;
+        hit.v = uv.y;
+        
         return true;
     }
 };
