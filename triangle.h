@@ -147,7 +147,7 @@ private:
     aabb bbox;
     vec3 normal;
     double D;
-    vec3 w;
+    vec3 w; // normal / dot(normal, normal)
     double area;
 
     virtual void update_bounding_box()
@@ -162,10 +162,10 @@ private:
             return false;
 
         auto uv = vertices[0].uv + a * (vertices[1].uv - vertices[0].uv) + b * (vertices[2].uv - vertices[0].uv);
-        
+
         hit.u = uv.x;
         hit.v = uv.y;
-        
+
         return true;
     }
 };

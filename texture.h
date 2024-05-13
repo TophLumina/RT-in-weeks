@@ -60,7 +60,7 @@ public:
             return color(1, 0, 1);
 
         u = interval(0, 1).clamp(u);
-        v = 1.0 - interval(0, 1).clamp(v); // Flip V in tex coord
+        v = interval(0, 1).clamp(v);
 
         auto x = static_cast<int>(u * image.width());
         auto y = static_cast<int>(v * image.height());

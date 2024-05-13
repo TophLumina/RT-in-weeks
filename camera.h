@@ -254,7 +254,7 @@ private:
                 for (int i = 0; i < shadow_samples; ++i)
                 {
                     // Randomly sample a light source
-                    shared_ptr<hittable> light = lights.random_hittable();
+                    auto light = lights.random_hittable();
                     vec3 light_dir = light->random(hit.hit_point);
 
                     // Check if the light source is visible

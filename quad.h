@@ -149,7 +149,7 @@ private:
     aabb bbox;
     vec3 normal;
     double D;
-    vec3 w; // Cached value use for solving UV
+    vec3 w; // normal / dot(normal, normal)
     double area;
 
     void update_bounding_box()

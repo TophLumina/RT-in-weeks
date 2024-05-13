@@ -138,6 +138,9 @@ public:
         return objects[i];
     }
 
+    // Only for Light RIS sampling
+    // TODO: Implement a method to provide a random light and its weight
+
     shared_ptr<hittable> random_hittable() const
     {
         if (objects.empty())
