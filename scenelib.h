@@ -21,8 +21,6 @@ void model_test(hittable_list &world, hittable_list &lights, camera &cam)
     cam.aspect_ratio = 1.0;
     cam.image_width = 800;
 
-    cam.max_depth = 16;
-
     cam.vfov = 40;
     cam.lookfrom = point3(100, 100, -150);
     cam.lookat = point3(0, 0, 0);
@@ -51,7 +49,6 @@ void cornell_box(hittable_list &world, hittable_list &lights, camera &cam)
     cam.image_width = 800;
 
     cam.shadow_samples = 1;
-    cam.max_depth = 16;
 
     cam.vfov = 40;
     cam.lookfrom = point3(27.8, 27.8, -80.0);
@@ -94,7 +91,6 @@ void cornell_box_modified(hittable_list &world, hittable_list &lights, camera &c
     cam.image_width = 800;
 
     cam.shadow_samples = 1;
-    cam.max_depth = 16;
 
     cam.vfov = 40;
     cam.lookfrom = point3(27.8, 27.8, -80.0);

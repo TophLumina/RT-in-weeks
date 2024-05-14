@@ -32,7 +32,7 @@ public:
     unsigned int samplers_per_pixel = 4; // Amount of samplers for each pixel
     unsigned int RIS_size = 16;          // Amount of samplers for each pixel
     unsigned int shadow_samples = 4;     // Amount of samplers for each shadow ray
-    unsigned int max_depth = 20;         // Ray bounce limit
+    unsigned int max_depth = 2;         // Ray bounce limit
 
     double vfov = 90;                   // Vertical field of view
     point3 lookfrom = point3(0, 0, -1); // Point where camera is looking from
@@ -53,13 +53,6 @@ public:
     FrameBuffer<vec3> normal_buffer;
     FrameBuffer<vec3> index_buffer;
     FrameBuffer<Reservoir<shared_ptr<hittable>>> reservoir_buffer;
-
-    // Buffers for TAA like method
-    FrameBuffer<color> color_buffer_prev;
-    FrameBuffer<point3> position_buffer_prev;
-    FrameBuffer<vec3> normal_buffer_prev;
-    FrameBuffer<vec3> index_buffer_prev;
-    FrameBuffer<Reservoir<shared_ptr<hittable>>> reservoir_buffer_prev;
 
     // Denoiser
     Denoiser denoiser = Denoiser(1.2, 8, pool);
@@ -345,6 +338,12 @@ private:
         }
 
         return direct_lighting * average_weight / ShadowRays;
+    }
+
+    color ReSTIR_direct_lighting(const ray &r_in, const hit_info &hit, const scatter_info &sinfo, const hittable &world, const hittable_list &lights, const int ShadowRays = 4) const
+    {
+        // TODO:: Implement ReSTIR
+        return color(0, 0, 0);
     }
 
     color ray_color(const ray &r, const hittable &world, int current_depth, const hittable_list &lights) const
