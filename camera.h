@@ -273,7 +273,7 @@ private:
             double weight;
         };
 
-        const auto epsilon = 1e-2;
+        const auto epsilon = 1e-4;
 
         // Generate RIS participating light samples
         vector<RIS_sample> samples;
