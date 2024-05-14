@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "FrameBuffer.h"
+#include "Math/utility/VectorOperations.hpp"
 #include "PDF.h"
 #include "Reservoir.h"
 #include "ThreadPool.hpp"
@@ -20,17 +21,18 @@
 #include "hittable_list.h"
 #include "material.h"
 #include "rtweekend.h"
-
+#include "vec.h"
 
 using namespace std;
 class camera
 {
 public:
-    double aspect_ratio = 1.0;            // Ratio of image width over height
-    unsigned int image_width = 1;         // Rendered image width in pixel count
-    unsigned int samplers_per_pixel = 16; // Amount of samplers for each pixel
-    unsigned int shadow_samples = 16;     // Amount of samplers for each shadow ray
-    unsigned int max_depth = 20;          // Ray bounce limit
+    double aspect_ratio = 1.0;           // Ratio of image width over height
+    unsigned int image_width = 1;        // Rendered image width in pixel count
+    unsigned int samplers_per_pixel = 4; // Amount of samplers for each pixel
+    unsigned int RIS_size = 16;          // Amount of samplers for each pixel
+    unsigned int shadow_samples = 4;     // Amount of samplers for each shadow ray
+    unsigned int max_depth = 20;         // Ray bounce limit
 
     double vfov = 90;                   // Vertical field of view
     point3 lookfrom = point3(0, 0, -1); // Point where camera is looking from
@@ -229,6 +231,122 @@ private:
         return ray(ray_origin, ray_direction, ray_time);
     }
 
+    // Typical Shadow Ray Direct Lighting (Legacy)
+    color shadowray_direct_lighting(const ray &r_in, const hit_info &hit, const scatter_info &sinfo, const hittable &world, const hittable_list &lights, const int ShadowRays = 4) const
+    {
+        color direct_lighting(0, 0, 0);
+        for (int i = 0; i < ShadowRays; ++i)
+        {
+            // Randomly sample a light source
+            auto light = lights.random_hittable();
+            vec3 light_dir = light->random(hit.hit_point);
+
+            // Check if the light source is visible
+            hit_info light_hit;
+            ray shadow_ray(hit.hit_point, light_dir);
+            if (world.hit(shadow_ray, interval(0.001, 1), light_hit))
+            {
+                if (light_hit.hittable_index == light->index)
+                {
+                    auto scattering_pdf = sinfo.no_pdf ? 1.0 : hit.mat->scattering_pdf(r_in, hit, shadow_ray);
+                    auto cosine_theta = dot(hit.normal, normalize(light_dir));
+                    auto light_falloff = 10000.0 / squared_distance(hit.hit_point, light_hit.hit_point);
+                    color light_radiance = light_falloff * cosine_theta * light_hit.mat->emitter(shadow_ray, light_hit, light_hit.u, light_hit.v, light_hit.hit_point);
+                    direct_lighting += sinfo.attenuation * scattering_pdf * light_radiance / light->pdf_value(hit.hit_point, light_dir);
+                }
+            }
+        }
+        direct_lighting /= ShadowRays;
+
+        return direct_lighting;
+    }
+
+    // RIS Direct Lighting (Shadow rays Resampling)
+    color RIS_direct_lighting(const ray &r_in, const hit_info &hit, const scatter_info &sinfo, const hittable &world, const hittable_list &lights, const int RIS_size = 16, const int ShadowRays = 4) const
+    {
+        struct RIS_sample
+        {
+            unsigned int light_idx;
+            vec3 light_dir;
+            color calculated_radiance;
+            double target_distribution_val;
+            double weight;
+        };
+
+        const auto epsilon = 1e-2;
+
+        // Generate RIS participating light samples
+        vector<RIS_sample> samples;
+        double total_weight = 0;
+        for (int i = 0; i < RIS_size; ++i)
+        {
+            // Randomly sample a light source
+            auto light = lights.random_hittable();
+            vec3 light_dir = light->random(hit.hit_point);
+
+            // Use lights.pdf as proposal distribution
+            auto light_pdf_val = light->pdf_value(hit.hit_point, light_dir);
+
+            // Use function proportional to Li (incoming Radiance) as target distribution
+            auto scattering_pdf_val = sinfo.no_pdf ? 1.0 : hit.mat->scattering_pdf(r_in, hit, ray(hit.hit_point, light_dir));
+            auto cosine_theta = dot(hit.normal, normalize(light_dir));
+
+            // Clamp
+            cosine_theta = cosine_theta > epsilon ? cosine_theta : 0.0;
+
+            hit_info false_hit;
+            false_hit.set_face_normal(ray(hit.hit_point, light_dir), light->get_normal(point3()));
+
+            double light_falloff = 10000.0 / squared_length(light_dir);
+            color emission = light->get_material()->emitter(ray(hit.hit_point, light_dir), false_hit, false_hit.u, false_hit.v, false_hit.hit_point);
+            color light_radiance = light_falloff * cosine_theta * emission;
+
+            // Weight: target_pdf / proposal_pdf
+            auto target_distribution_val = squared_length(light_radiance) * scattering_pdf_val;
+            auto proposal_distribution_val = light_pdf_val;
+            auto weight = target_distribution_val / (proposal_distribution_val + epsilon);
+
+            total_weight += weight;
+
+            samples.push_back({light->index, light_dir, light_radiance, target_distribution_val, weight});
+        }
+
+        double average_weight = total_weight / RIS_size;
+
+        color direct_lighting(0, 0, 0);
+
+        // Resampling and solving visibility
+        for (int i = 0; i < ShadowRays; ++i)
+        {
+            // Resample a light source by its weight
+            auto xi = random_double(0, total_weight);
+            auto sum = 0.0;
+
+            for (const RIS_sample &sample : samples)
+            {
+                sum += sample.weight;
+                if (xi < sum)
+                {
+                    // Check visibility
+                    hit_info light_hit;
+                    ray shadow_ray(hit.hit_point, sample.light_dir);
+                    if (world.hit(shadow_ray, interval(0.001, 1), light_hit))
+                    {
+                        if (light_hit.hittable_index == sample.light_idx)
+                        {
+                            auto scattering_pdf_val = sinfo.no_pdf ? 1.0 : hit.mat->scattering_pdf(r_in, hit, shadow_ray);
+                            direct_lighting += sinfo.attenuation * scattering_pdf_val * sample.calculated_radiance / (sample.target_distribution_val + epsilon);
+                        }
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        return direct_lighting * average_weight / ShadowRays;
+    }
+
     color ray_color(const ray &r, const hittable &world, int current_depth, const hittable_list &lights) const
     {
         hit_info hit;
@@ -250,30 +368,10 @@ private:
                     return sinfo.attenuation * ray_color(sinfo.ray_without_pdf, world, current_depth, lights);
 
                 // Direct lighting (Shadow rays)
-                color direct_lighting(0, 0, 0);
-                for (int i = 0; i < shadow_samples; ++i)
-                {
-                    // Randomly sample a light source
-                    auto light = lights.random_hittable();
-                    vec3 light_dir = light->random(hit.hit_point);
+                // color direct_lighting = shadowray_direct_lighting(r, hit, sinfo, world, lights, shadow_samples);
 
-                    // Check if the light source is visible
-                    hit_info light_hit;
-                    ray shadow_ray(hit.hit_point, light_dir);
-                    if (world.hit(shadow_ray, interval(0.001, 1), light_hit))
-                    {
-                        if (light_hit.hittable_index == light->index)
-                        {
-                            auto scattering_pdf = hit.mat->scattering_pdf(r, hit, shadow_ray);
-                            auto cosine_theta = dot(hit.normal, normalize(light_dir));
-                            // auto light_falloff = 1.0 / squared_distance(hit.hit_point, light_hit.hit_point);
-                            color light_radiance = cosine_theta * light_hit.mat->emitter(shadow_ray, light_hit, light_hit.u, light_hit.v, light_hit.hit_point);
-                            direct_lighting += sinfo.attenuation * scattering_pdf * light_radiance / light->pdf_value(hit.hit_point, light_dir);
-                        }
-                    }
-                }
-
-                direct_lighting /= shadow_samples;
+                // Direct lighting (RIS)
+                color direct_lighting = RIS_direct_lighting(r, hit, sinfo, world, lights, RIS_size, shadow_samples);
                 direct_lighting += emission;
 
                 // Mixture PDF for light sampling and material scattering

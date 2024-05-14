@@ -139,6 +139,16 @@ public:
         return p - origin;
     }
 
+    shared_ptr<material> get_material() const override
+    {
+        return mat;
+    }
+
+    vec3 get_normal(const point3 &p) const override
+    {
+        return normal;
+    }
+
 private:
     std::array<Vertex, 3> vertices;
     point3 Q;

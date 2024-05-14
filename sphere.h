@@ -2,6 +2,7 @@
 
 #include "Math/utility/MatrixOperations.hpp"
 #include "Math/utility/MatrixTransforms.hpp"
+#include "Math/utility/VectorOperations.hpp"
 #include "ONB.h"
 #include "hittable.h"
 #include "vec.h"
@@ -104,6 +105,16 @@ public:
         onb coord;
         coord.build_from_w(dir);
         return coord.local(random2sphere(radius, dist_squared));
+    }
+
+    shared_ptr<material> get_material() const override
+    {
+        return mat;
+    }
+
+    vec3 get_normal(const point3 &p) const override
+    {
+        return normalize(p - center);
     }
 
 private:
