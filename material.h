@@ -13,13 +13,13 @@ public:
     ray ray_without_pdf;
 };
 
-class material
+class Material
 {
 public:
     static unsigned int index; // For debugging and denoising
 
-    material() { ++index; }
-    virtual ~material() = default;
+    Material() { ++index; }
+    virtual ~Material() = default;
 
     virtual bool is_emissive() const { return false; }
 
@@ -33,10 +33,10 @@ public:
     virtual double scattering_pdf(const ray &r_in, const hit_info &hit, const ray &scatted) const { return 0; }
 };
 
-unsigned int material::index = 1; // 0 is reserved for the background
+unsigned int Material::index = 1; // 0 is reserved for the background
 
 // Diffuse material scattering weighted by cos(theta)
-class lambertian : public material
+class lambertian : public Material
 {
 public:
     lambertian(const shared_ptr<Texture> _tex) : albedo(_tex) {}
@@ -62,7 +62,7 @@ private:
 };
 
 // Diffuse material scattering weighted by random directions
-class diffuse : public material
+class diffuse : public Material
 {
 public:
     diffuse(const shared_ptr<Texture> _tex) : albedo(_tex) {}
@@ -86,7 +86,7 @@ private:
     shared_ptr<Texture> albedo;
 };
 
-class metal : public material
+class metal : public Material
 {
 public:
     metal(const shared_ptr<Texture> _tex, double f) : albedo(_tex), fuzz(f < 1 ? f : 1) {}
@@ -109,7 +109,7 @@ private:
     double fuzz;
 };
 
-class dielectric : public material
+class dielectric : public Material
 {
 public:
     dielectric(double index_of_reflection) : ir(index_of_reflection) {}
@@ -156,7 +156,7 @@ private:
     }
 };
 
-class isotropic : public material
+class isotropic : public Material
 {
 public:
     isotropic(shared_ptr<Texture> _tex) : albedo(_tex) {}
@@ -181,7 +181,7 @@ private:
     shared_ptr<Texture> albedo;
 };
 
-class diffuse_directional_light : public material
+class diffuse_directional_light : public Material
 {
 public:
     diffuse_directional_light(shared_ptr<Texture> e) : emit(e) {}

@@ -8,7 +8,7 @@
 class triangle : public hittable
 {
 public:
-    triangle(const Vertex &a, const Vertex &b, const Vertex &c, shared_ptr<material> m) : vertices({a, b, c}), mat(m)
+    triangle(const Vertex &a, const Vertex &b, const Vertex &c, shared_ptr<Material> m) : vertices({a, b, c}), mat(m)
     {
         Q = vertices[0].Position;
         u = vertices[1].Position - vertices[0].Position;
@@ -139,7 +139,7 @@ public:
         return p - origin;
     }
 
-    shared_ptr<material> get_material() const override
+    shared_ptr<Material> get_material() const override
     {
         return mat;
     }
@@ -153,7 +153,7 @@ private:
     std::array<Vertex, 3> vertices;
     point3 Q;
     vec3 u, v;
-    shared_ptr<material> mat;
+    shared_ptr<Material> mat;
     aabb bbox;
     vec3 normal;
     double D;

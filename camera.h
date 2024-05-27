@@ -16,6 +16,7 @@
 #include "PDF.h"
 #include "Reservoir.h"
 #include "ThreadPool.hpp"
+#include "color.h"
 #include "denoiser.h"
 #include "hittable.h"
 #include "hittable_list.h"
@@ -32,7 +33,7 @@ public:
     unsigned int samplers_per_pixel = 4; // Amount of samplers for each pixel
     unsigned int RIS_size = 16;          // Amount of samplers for each pixel
     unsigned int shadow_samples = 4;     // Amount of samplers for each shadow ray
-    unsigned int max_depth = 2;         // Ray bounce limit
+    unsigned int max_depth = 4;          // Ray bounce limit
 
     double vfov = 90;                   // Vertical field of view
     point3 lookfrom = point3(0, 0, -1); // Point where camera is looking from
@@ -340,9 +341,18 @@ private:
         return direct_lighting * average_weight / ShadowRays;
     }
 
-    color ReSTIR_direct_lighting(const ray &r_in, const hit_info &hit, const scatter_info &sinfo, const hittable &world, const hittable_list &lights, const int ShadowRays = 4) const
+    color ReSTIR_direct_lighting(const ray &r_in, const hit_info &hit, const scatter_info &sinfo, const hittable &world, const hittable_list &lights, const int ReSTIR_capacity, const int ShadowRays = 4) const
     {
         // TODO:: Implement ReSTIR
+        // 1. Generate Reservoir Buffer before Rendering
+        // 2. Combine Reservoir with Nearby Reservoirs (Spatial-Temporal Reuse)
+        // 3. Sample Combined Reservoirs for Direct Lighting
+        // 4. Use the Samples to Solve direct lighting (Shadow rays here)
+        for (int i = 0; i < ReSTIR_capacity; ++i)
+        {
+            ;
+        }
+
         return color(0, 0, 0);
     }
 
@@ -366,11 +376,23 @@ private:
                 if (sinfo.no_pdf)
                     return sinfo.attenuation * ray_color(sinfo.ray_without_pdf, world, current_depth, lights);
 
-                // Direct lighting (Shadow rays)
-                // color direct_lighting = shadowray_direct_lighting(r, hit, sinfo, world, lights, shadow_samples);
+                color direct_lighting;
+                if (current_depth == max_depth - 1)
+                {
+                    // TODO:: For primary rays, use ReSTIR for direct lighting
+                    direct_lighting = shadowray_direct_lighting(r, hit, sinfo, world, lights, shadow_samples);
+                    // direct_lighting = RIS_direct_lighting(r, hit, sinfo, world, lights, RIS_size, shadow_samples);
+                }
+                else
+                {
+                    // For secondary rays, use RIS or just Shadow Ray for direct lighting
+                    // Direct lighting (Shadow rays)
+                    direct_lighting = shadowray_direct_lighting(r, hit, sinfo, world, lights, shadow_samples);
 
-                // Direct lighting (RIS)
-                color direct_lighting = RIS_direct_lighting(r, hit, sinfo, world, lights, RIS_size, shadow_samples);
+                    // Direct lighting (RIS)
+                    // direct_lighting = RIS_direct_lighting(r, hit, sinfo, world, lights, RIS_size, shadow_samples);
+                }
+
                 direct_lighting += emission;
 
                 // Mixture PDF for light sampling and material scattering
@@ -459,4 +481,32 @@ private:
             }
         }
     }
+
+    // Generate Reservoirs for ReSTIR
+    // void generate_reservoirs(const hittable &world, const hittable_list &lights)
+    // {
+    //     // Initial Sampling
+    //     for (int j = 0; j < image_height; ++j)
+    //     {
+    //         for (int i = 0; i < image_width; ++i)
+    //         {
+    //             for (int s_i = 0; s_i < sqrt_spp; ++s_i)
+    //             {
+    //                 for (int s_j = 0; s_j < sqrt_spp; ++s_j)
+    //                 {
+    //                     ray r = get_primary_ray(i, j, s_i, s_j);
+    //                     hit_info hit;
+    //                     if (world.hit(r, interval(0.001, infinity), hit))
+    //                     {
+    //                         auto pixel_reservoir = reservoir_buffer.data[i][j];
+    //                         pixel_reservoir.update(make_shared<hit_info>(hit), 1.0);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     // Spatial-Temporal Reuse
+
+    // }
 };

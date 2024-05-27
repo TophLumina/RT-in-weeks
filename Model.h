@@ -2,9 +2,11 @@
 
 #include "Mesh.h"
 #include "hittable_list.h"
+#include "material.h"
 #include "rtweekend.h"
 
 #include <assimp/Importer.hpp>
+#include <assimp/material.h>
 #include <assimp/mesh.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -20,14 +22,15 @@ public:
     std::vector<shared_ptr<Mesh>> meshes;
     std::string directory;
 
-    Model(const char *path)
+    Model(const char *path, shared_ptr<Material> mat = nullptr)
     {
-        loadModel(path);
+        loadModel(path, mat);
     }
+
 private:
     std::vector<shared_ptr<MeshTexture>> textures_cached;
 
-    void loadModel(std::string path)
+    void loadModel(std::string path, shared_ptr<Material> mat = nullptr)
     {
         Assimp::Importer importer;
         // TODO:: Find out if there is a need for uv flip
@@ -41,25 +44,25 @@ private:
 
         directory = path.substr(0, path.find_last_of('/'));
 
-        processNode(scene->mRootNode, scene);
+        processNode(scene->mRootNode, scene, mat);
 
         for (auto &mesh : meshes)
             add(std::static_pointer_cast<hittable_list>(mesh));
     }
 
-    void processNode(aiNode *node, const aiScene *scene)
+    void processNode(aiNode *node, const aiScene *scene, shared_ptr<Material> mat = nullptr)
     {
         for (unsigned int i = 0; i < node->mNumMeshes; ++i)
         {
             aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-            meshes.push_back(processMesh(mesh, scene));
+            meshes.push_back(processMesh(mesh, scene, mat));
         }
 
         for (unsigned int i = 0; i < node->mNumChildren; ++i)
-            processNode(node->mChildren[i], scene);
+            processNode(node->mChildren[i], scene, mat);
     }
 
-    shared_ptr<Mesh> processMesh(aiMesh *mesh, const aiScene *scene)
+    shared_ptr<Mesh> processMesh(aiMesh *mesh, const aiScene *scene, shared_ptr<Material> mat = nullptr)
     {
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
@@ -134,11 +137,14 @@ private:
             textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
             std::vector<shared_ptr<MeshTexture>> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
             textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-            std::vector<shared_ptr<MeshTexture>> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+            std::vector<shared_ptr<MeshTexture>> normalMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal");
             textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
         }
 
-        return make_shared<Mesh>(vertices, indices, textures);
+        if (mat)
+            return make_shared<Mesh>(vertices, indices, textures, mat);
+        else
+            return make_shared<Mesh>(vertices, indices, textures);
     }
 
     std::vector<shared_ptr<MeshTexture>> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName)

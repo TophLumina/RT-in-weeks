@@ -9,7 +9,7 @@
 class bvh_node : public hittable
 {
 public:
-    bvh_node(const hittable_list &list) : bvh_node(list.flattened_for_bvh()->objects, 0, list.flattened_for_bvh()->objects.size()) {}
+    bvh_node(const hittable_list &list) : bvh_node(list.flatten()->objects, 0, list.flatten()->objects.size()) {}
 
     // original method
     // should never be called unless the list is already been flattened

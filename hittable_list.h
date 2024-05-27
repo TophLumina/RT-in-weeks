@@ -17,6 +17,11 @@ public:
 
     hittable_list() {}
     hittable_list(shared_ptr<hittable> hittable) { add(hittable); }
+    hittable_list(vector<shared_ptr<hittable>> src_objects)
+    {
+        for (const auto &object : src_objects)
+            add(object);
+    }
     virtual ~hittable_list() = default;
 
     aabb bounding_box() const override { return bbox; }
@@ -147,7 +152,7 @@ public:
     }
 
     // Flatten the nested hittable_list for full BVH Tree construction
-    shared_ptr<hittable_list> flattened_for_bvh() const
+    shared_ptr<hittable_list> flatten() const
     {
         auto list = make_shared<hittable_list>();
         flatten_list(make_shared<hittable_list>(*this), list);

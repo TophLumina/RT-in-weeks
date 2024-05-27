@@ -14,6 +14,7 @@ int main(int argc, char const *argv[])
 
     // Building acceleration structure(BVH Tree)
     world = hittable_list(make_shared<bvh_node>(world));
+    lights = hittable_list(lights.flatten()->objects);
 
     cam.samplers_per_pixel = argc > 1 ? atoi(argv[argc - 1]) : 64; // samplers per pixel
 

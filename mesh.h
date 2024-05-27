@@ -24,19 +24,37 @@ struct MeshTexture : public image_texture
 class Mesh : public hittable_list
 {
 public:
-    shared_ptr<material> material;
+    shared_ptr<Material> material;
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<shared_ptr<MeshTexture>> textures;
 
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<shared_ptr<MeshTexture>> textures) : vertices(vertices), indices(indices), textures(textures)
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<shared_ptr<MeshTexture>> textures, shared_ptr<Material> mat = nullptr) : vertices(vertices), indices(indices), textures(textures)
     {
-        setupMesh();
+        if (mat)
+            setupMesh(mat);
+        else
+            setupMesh();
     }
+
 private:
     void setupMesh()
     {
         loadTextures();
+
+        for (unsigned int i = 0; i < indices.size(); i += 3)
+        {
+            auto a = vertices[indices[i]];
+            auto b = vertices[indices[i + 1]];
+            auto c = vertices[indices[i + 2]];
+
+            add(make_shared<triangle>(a, b, c, material));
+        }
+    }
+
+    void setupMesh(shared_ptr<Material> mat)
+    {
+        material = mat;
 
         for (unsigned int i = 0; i < indices.size(); i += 3)
         {

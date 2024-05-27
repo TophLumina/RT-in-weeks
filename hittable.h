@@ -4,14 +4,14 @@
 #include "vec.h"
 #include <memory>
 
-class material;
+class Material;
 
 class hit_info
 {
 public:
     point3 hit_point = point3(0, 0, 0);
     vec3 normal = vec3(1, 0, 0);
-    shared_ptr<material> mat = nullptr;
+    shared_ptr<Material> mat = nullptr;
     unsigned int hittable_index = 0; // For debugging and denoising
     double t = 0;
     double u = 0;
@@ -64,7 +64,7 @@ public:
 
     virtual double pdf_value(const point3 &origin, const vec3 &v) const { return 0.0; }
     virtual vec3 random(const vec3 &origin) const { return vec3(1, 0, 0); }
-    virtual shared_ptr<material> get_material() const { return nullptr; }
+    virtual shared_ptr<Material> get_material() const { return nullptr; }
     virtual vec3 get_normal(const point3 &p) const { return vec3(1, 0, 0); }
 
     // The Average of all the hittable's geometric centers

@@ -7,11 +7,10 @@
 #include "hittable.h"
 #include "vec.h"
 
-
 class sphere : public hittable
 {
 public:
-    sphere(point3 _origin, double _radius, shared_ptr<material> _material) : origin(_origin), radius(_radius), mat(_material)
+    sphere(point3 _origin, double _radius, shared_ptr<Material> _material) : origin(_origin), radius(_radius), mat(_material)
     {
         center = origin;
 
@@ -107,7 +106,7 @@ public:
         return coord.local(random2sphere(radius, dist_squared));
     }
 
-    shared_ptr<material> get_material() const override
+    shared_ptr<Material> get_material() const override
     {
         return mat;
     }
@@ -121,7 +120,7 @@ private:
     point3 origin;
     point3 center;
     double radius;
-    shared_ptr<material> mat;
+    shared_ptr<Material> mat;
     aabb bbox;
 
     void update_bounding_box()

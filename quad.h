@@ -12,7 +12,7 @@ class quad : public hittable
 {
 public:
     // counter-clockwise order
-    quad(const point3 &a, const point3 &b, const point3 &c, const point3 &d, shared_ptr<material> m) : vertices({a, b, c, d}), mat(m)
+    quad(const point3 &a, const point3 &b, const point3 &c, const point3 &d, shared_ptr<Material> m) : vertices({a, b, c, d}), mat(m)
     {
         Q = vertices[0];
         u = vertices[3] - vertices[0];
@@ -141,7 +141,7 @@ public:
         return p - origin;
     }
 
-    shared_ptr<material> get_material() const override
+    shared_ptr<Material> get_material() const override
     {
         return mat;
     }
@@ -155,7 +155,7 @@ private:
     std::array<point3, 4> vertices;
     point3 Q;
     vec3 u, v;
-    shared_ptr<material> mat;
+    shared_ptr<Material> mat;
     aabb bbox;
     vec3 normal;
     double D;
@@ -180,7 +180,7 @@ private:
 };
 
 // Return a 3D cube that contains the two opposite vertices a & b
-inline shared_ptr<hittable_list> cube(const point3 &a, const point3 &b, shared_ptr<material> mat)
+inline shared_ptr<hittable_list> cube(const point3 &a, const point3 &b, shared_ptr<Material> mat)
 {
     auto faces = make_shared<hittable_list>();
 
@@ -194,11 +194,11 @@ inline shared_ptr<hittable_list> cube(const point3 &a, const point3 &b, shared_p
 
     // Construct the 6 faces of the cube
     faces->add(make_shared<quad>(min, min + dx, min + dx + dy, min + dy, mat));
-    faces->add(make_shared<quad>(min, min + dx, min + dx + dz, min + dz, mat));
+    faces->add(make_shared<quad>(min, min + dz, min + dx + dz, min + dx, mat));
     faces->add(make_shared<quad>(min, min + dy, min + dy + dz, min + dz, mat));
-    faces->add(make_shared<quad>(max, max - dx, max - dx - dy, max - dy, mat));
+    faces->add(make_shared<quad>(max, max - dy, max - dx - dy, max - dx, mat));
     faces->add(make_shared<quad>(max, max - dx, max - dx - dz, max - dz, mat));
-    faces->add(make_shared<quad>(max, max - dy, max - dy - dz, max - dz, mat));
+    faces->add(make_shared<quad>(max, max - dz, max - dy - dz, max - dy, mat));
 
     return faces;
 }

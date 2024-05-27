@@ -43,24 +43,4 @@ public:
             }
         }
     }
-
-    F ProbabilisticWeight(std::function<F(T sample)> target_distribution) const
-    {
-        F weight_sum = 0;
-        for (const auto &item : data)
-        {
-            weight_sum += item.weight * target_distribution(item.value);
-        }
-
-        F result = 0;
-        for (const auto &item : data)
-        {
-            if (item.weight > 0)
-            {
-                result += item.weight / target_distribution(item.value);
-            }
-        }
-
-        return result / weight_sum * weight_sofar / items_sofar;
-    }
 };
