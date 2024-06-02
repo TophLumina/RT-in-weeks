@@ -68,7 +68,7 @@ void cornell_box_modified(hittable_list &world, hittable_list &lights, camera &c
 
     cam.RIS_size = 16;
     cam.shadow_samples = 4;
-    cam.max_depth = 64;
+    cam.max_depth = 16;
 
     cam.vfov = 40;
     cam.lookfrom = point3(27.8, 27.8, -80.0);

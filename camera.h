@@ -341,21 +341,6 @@ private:
         return direct_lighting * average_weight / ShadowRays;
     }
 
-    color ReSTIR_direct_lighting(const ray &r_in, const hit_info &hit, const scatter_info &sinfo, const hittable &world, const hittable_list &lights, const int ReSTIR_capacity, const int ShadowRays = 4) const
-    {
-        // TODO:: Implement ReSTIR
-        // 1. Generate Reservoir Buffer before Rendering
-        // 2. Combine Reservoir with Nearby Reservoirs (Spatial-Temporal Reuse)
-        // 3. Sample Combined Reservoirs for Direct Lighting
-        // 4. Use the Samples to Solve direct lighting (Shadow rays here)
-        for (int i = 0; i < ReSTIR_capacity; ++i)
-        {
-            ;
-        }
-
-        return color(0, 0, 0);
-    }
-
     color ray_color(const ray &r, const hittable &world, int current_depth, const hittable_list &lights) const
     {
         hit_info hit;
@@ -380,17 +365,17 @@ private:
                 if (current_depth == max_depth - 1)
                 {
                     // TODO:: For primary rays, use ReSTIR for direct lighting
-                    direct_lighting = shadowray_direct_lighting(r, hit, sinfo, world, lights, shadow_samples);
-                    // direct_lighting = RIS_direct_lighting(r, hit, sinfo, world, lights, RIS_size, shadow_samples);
+                    // direct_lighting = shadowray_direct_lighting(r, hit, sinfo, world, lights, shadow_samples);
+                    direct_lighting = RIS_direct_lighting(r, hit, sinfo, world, lights, RIS_size, shadow_samples);
                 }
                 else
                 {
                     // For secondary rays, use RIS or just Shadow Ray for direct lighting
                     // Direct lighting (Shadow rays)
-                    direct_lighting = shadowray_direct_lighting(r, hit, sinfo, world, lights, shadow_samples);
+                    // direct_lighting = shadowray_direct_lighting(r, hit, sinfo, world, lights, shadow_samples);
 
                     // Direct lighting (RIS)
-                    // direct_lighting = RIS_direct_lighting(r, hit, sinfo, world, lights, RIS_size, shadow_samples);
+                    direct_lighting = RIS_direct_lighting(r, hit, sinfo, world, lights, RIS_size, shadow_samples);
                 }
 
                 direct_lighting += emission;
