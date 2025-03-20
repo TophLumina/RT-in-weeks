@@ -1,3 +1,11 @@
+if (DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        CACHE STRING "")
+    message("VCPKG_ROOT found, using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+    else ()
+    message("VCPKG_ROOT not found, not using toolchain file")
+endif()
+
 cmake_minimum_required(VERSION 3.10)
 
 project(RayTracing)
@@ -18,3 +26,8 @@ add_compile_definitions (MATH_IOS)
 aux_source_directory(. DIR_SRC)
 
 add_executable(${PROJECT_NAME} ${DIR_SRC})
+
+# Assimp
+find_package(assimp)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${ASSIMP_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${ASSIMP_INCLUDE_DIRS})
