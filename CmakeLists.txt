@@ -1,9 +1,12 @@
 if (DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
         CACHE STRING "")
-    message("VCPKG_ROOT found, using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
-    else ()
-    message("VCPKG_ROOT not found, not using toolchain file")
+    message("VCPKG_ROOT found: $ENV{VCPKG_ROOT}")
+    message("Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+else ()
+    message("VCPKG_ROOT not found or CMAKE_TOOLCHAIN_FILE already defined.")
+    # Optional: Manually specify the path to vcpkg if needed
+    # set(CMAKE_TOOLCHAIN_FILE "path/to/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
 endif()
 
 cmake_minimum_required(VERSION 3.10)
