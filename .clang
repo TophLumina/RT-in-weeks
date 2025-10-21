@@ -1,0 +1,19 @@
+CompileFlags:
+  Add:
+    - -std=c++20
+    - -xc++
+    - -I.
+    - -IC:/Users/26257/Desktop/RT-in-weeks
+    - -IC:/Users/26257/Desktop/RT-in-weeks/Math
+    - -IC:/Users/26257/Desktop/RT-in-weeks/Math/include
+    - -Wall
+    - -Wextra
+  Remove:
+    - -xobjective-c++-header
+
+Diagnostics:
+  MissingIncludes: Strict
+  UnusedIncludes: Strict
+
+Index:
+  Background: Build
