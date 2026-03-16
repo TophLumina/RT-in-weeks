@@ -15,6 +15,8 @@ message(STATUS "Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 
 cmake_minimum_required(VERSION 3.10)
 
+# Optionally specify the generator if not running from an IDE or if VS is not found
+
 project(RayTracing)
 
 set(CMAKE_CXX_STANDARD 20)

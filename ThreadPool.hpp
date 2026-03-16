@@ -1,12 +1,13 @@
 #pragma once
 
-#include <vector>
-#include <queue>
-#include <thread>
-#include <mutex>
 #include <condition_variable>
 #include <functional>
 #include <future>
+#include <mutex>
+#include <queue>
+#include <thread>
+#include <vector>
+
 
 // TODO:: Refine the ThreadPool using shared_mutex
 
@@ -26,7 +27,7 @@ public:
         for (size_t i = 0; i < threads; ++i)
         {
             m_workers.emplace_back([this]
-            {
+                                   {
                 while (true)
                 {
                     std::function<void()> task;
@@ -39,13 +40,12 @@ public:
                         this->m_tasks.pop();
                     }
                     task();
-                }
-            });
+                } });
         }
     }
 
     template <typename F, typename... Args>
-    auto Submit(F&& f, Args&&... args) -> std::future<decltype(f(args...))>
+    auto Submit(F &&f, Args &&...args) -> std::future<decltype(f(args...))>
     {
         using return_type = decltype(f(args...));
         auto task = std::make_shared<std::packaged_task<return_type()>>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
@@ -54,7 +54,8 @@ public:
             std::unique_lock<std::mutex> lock(m_mutex);
             if (m_stop)
                 throw std::runtime_error("Submit on stopped ThreadPool");
-            m_tasks.emplace([task]() { (*task)(); });
+            m_tasks.emplace([task]()
+                            { (*task)(); });
         }
         m_condition.notify_one();
         return result;
@@ -67,7 +68,7 @@ public:
             m_stop = true;
         }
         m_condition.notify_all();
-        for (std::thread& worker : m_workers)
+        for (std::thread &worker : m_workers)
             worker.join();
     }
 };
