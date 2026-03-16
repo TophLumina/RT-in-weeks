@@ -12,7 +12,7 @@
 
 #include "FrameBuffer.h"
 #include "PDF.h"
-#include "ThreadPool.hpp"
+#include "ThreadPool.h"
 #include "denoiser.h"
 #include "hittable_list.h"
 #include "material.h"

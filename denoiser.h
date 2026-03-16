@@ -2,7 +2,7 @@
 
 #include "FrameBuffer.h"
 #include "color.h"
-#include "ThreadPool.hpp"
+#include "ThreadPool.h"
 #include <cmath>
 #include <future>
 #include <queue>
