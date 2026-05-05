@@ -1,0 +1,6 @@
+CompileFlags:
+  Add: [
+    "-I.",
+    "-I./external",
+    "-I./Math/include"
+  ]
