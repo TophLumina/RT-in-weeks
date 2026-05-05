@@ -143,7 +143,7 @@ static MATH_FUNCTION_QUALIFIERS T cofactor(mat<M, N, T> const &m, LENGTH_TYPE ro
 }
 
 template <LENGTH_TYPE M, LENGTH_TYPE N, typename T>
-static MATH_FUNCTION_QUALIFIERS mat<M, N, T> minor(mat<M, N, T> const &m, LENGTH_TYPE row, LENGTH_TYPE col)
+static MATH_FUNCTION_QUALIFIERS mat<M - 1, N - 1, T> minor(mat<M, N, T> const &m, LENGTH_TYPE row, LENGTH_TYPE col)
 {
     mat<M - 1, N - 1, T> result;
     for (LENGTH_TYPE i = 0; i < M; ++i)
@@ -196,15 +196,23 @@ template <LENGTH_TYPE M, LENGTH_TYPE N, typename T>
 static MATH_FUNCTION_QUALIFIERS mat<M, N, T> adjugate(mat<M, N, T> const &m)
 {
     static_assert(M == N, "adjugate is only defined for square matrices");
-    mat<M, N, T> result;
-    for (LENGTH_TYPE i = 0; i < M; ++i)
+
+    if constexpr (M == 2)
     {
-        for (LENGTH_TYPE j = 0; j < N; ++j)
-        {
-            result[i][j] = determinant(minor(m, j, i)) * ((i + j) % 2 == 0 ? 1 : -1);
-        }
+        return mat<2, 2, T>(m.m11, -m.m01, -m.m10, m.m00);
     }
-    return result;
+    else
+    {
+        mat<M, N, T> result;
+        for (LENGTH_TYPE i = 0; i < M; ++i)
+        {
+            for (LENGTH_TYPE j = 0; j < N; ++j)
+            {
+                result[i][j] = determinant(minor(m, j, i)) * ((i + j) % 2 == 0 ? 1 : -1);
+            }
+        }
+        return result;
+    }
 }
 
 template <LENGTH_TYPE M, LENGTH_TYPE N, typename T>

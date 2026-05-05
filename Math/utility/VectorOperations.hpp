@@ -290,7 +290,29 @@ static MATH_FUNCTION_QUALIFIERS vec<N, T> reject(vec<N, T> const &v, vec<N, T> c
 template <LENGTH_TYPE N, typename T>
 static MATH_FUNCTION_QUALIFIERS vec<N, T> orthogonal(vec<N, T> const &v)
 {
-    return v - project(v, v);
+    static_assert(N > 1, "orthogonal is only defined for vectors with at least 2 dimensions");
+    static_assert(std::is_floating_point<T>::value, "T must be a floating point type");
+
+    if (is_zero(v))
+    {
+        return vec<N, T>();
+    }
+
+    LENGTH_TYPE axis = 0;
+    T min_abs = Math::abs(v[0]);
+    for (LENGTH_TYPE i = 1; i < N; ++i)
+    {
+        T const component_abs = Math::abs(v[i]);
+        if (component_abs < min_abs)
+        {
+            min_abs = component_abs;
+            axis = i;
+        }
+    }
+
+    vec<N, T> basis(static_cast<T>(0));
+    basis[axis] = static_cast<T>(1);
+    return reject(basis, v);
 }
 
 template <LENGTH_TYPE N, typename T>

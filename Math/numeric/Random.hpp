@@ -7,16 +7,28 @@
 
 MATH_NAMESPACE_BEGIN
 
+static MATH_INLINE std::mt19937 &random_engine()
+{
+    static thread_local std::mt19937 gen(std::random_device{}());
+    return gen;
+}
+
 // Returns a random number in the range [0, 1).
 template <typename T>
 static MATH_INLINE T random()
 {
     static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 
-    std::random_device rd;
-    static std::mt19937 gen(rd());
-    static std::uniform_real_distribution<T> dis(0, 1);
-    return dis(gen);
+    if constexpr (std::is_integral<T>::value)
+    {
+        std::uniform_int_distribution<T> dis(0, 1);
+        return dis(random_engine());
+    }
+    else
+    {
+        std::uniform_real_distribution<T> dis(static_cast<T>(0), static_cast<T>(1));
+        return dis(random_engine());
+    }
 }
 
 template <typename T>
@@ -24,18 +36,25 @@ static MATH_INLINE T random_range(T const &min = std::numeric_limits<T>::min(), 
 {
     static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 
-    return min + random<T>() * (max - min);
+    if constexpr (std::is_integral<T>::value)
+    {
+        std::uniform_int_distribution<T> dis(min, max);
+        return dis(random_engine());
+    }
+    else
+    {
+        std::uniform_real_distribution<T> dis(min, max);
+        return dis(random_engine());
+    }
 }
 
 template <typename T>
 static MATH_INLINE T random_gaussian(T const &mean = static_cast<T>(0), T const &stddev = static_cast<T>(1))
 {
-    static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+    static_assert(std::is_floating_point<T>::value, "T must be a floating point type");
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
     std::normal_distribution<T> dis(mean, stddev);
-    return dis(gen);
+    return dis(random_engine());
 }
 
 VECTOR_NAMESPACE_BEGIN
